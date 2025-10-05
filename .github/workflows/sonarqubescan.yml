@@ -22,7 +22,8 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       with:
         args: >
-          -Dsonar.projectKey=python-vulnerable-app
-          -Dsonar.projectName="Python Vulnerable App"
+          -Dsonar.projectKey=java-reachability-playground
+          -Dsonar.projectName="Java Reachability Playground"
           -Dsonar.organization=tupppi
           -Dsonar.sources=.
+          -Dsonar.host.url=https://sonarcloud.io
