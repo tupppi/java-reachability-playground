@@ -12,29 +12,28 @@ jobs:
         with:
           ref: master
           
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          distribution: 'temurin'
-          java-version: '8'
+          python-version: '3.9'
           
-      - name: Cache Maven packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
-          
-      - name: Build Java application
-        run: mvn clean compile
-        
-      - name: Start Java application
+      - name: Install Python dependencies
         run: |
-          mvn exec:java -Dexec.mainClass=Unzipper &
-          echo "Java application started in background"
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+        
+      - name: Start vulnerable Python application
+        run: |
+          python vulnerable-app.py &
+          echo "Vulnerable Flask application started in background"
           
       - name: Wait for application to start
-        run: sleep 15
+        run: sleep 10
+        
+      - name: Test application is running
+        run: |
+          curl -f http://localhost:8080/ || exit 1
+          echo "Application is responding successfully"
         
       - name: OWASP ZAP DAST Scan
         uses: zaproxy/action-baseline@v0.14.0
