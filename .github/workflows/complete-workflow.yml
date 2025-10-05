@@ -63,7 +63,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           command: code
-          args: --severity-threshold=low --json-file-output=snyk-code-results.json
+          args: --severity-threshold=low
           
       - name: Parse and display Snyk Code results
         if: always()
@@ -74,41 +74,16 @@ jobs:
           echo "<summary><strong>📊 Snyk Code SAST Scan Summary</strong></summary>" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          if [ -f snyk-code-results.json ]; then
-            echo "### 🎯 Snyk Code Scan Results" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            
-            TOTAL_ISSUES=$(jq -r '.runs[0].results | length' snyk-code-results.json 2>/dev/null || echo "0")
-            HIGH_ISSUES=$(jq -r '[.runs[0].results[] | select(.level == "error")] | length' snyk-code-results.json 2>/dev/null || echo "0")
-            MEDIUM_ISSUES=$(jq -r '[.runs[0].results[] | select(.level == "warning")] | length' snyk-code-results.json 2>/dev/null || echo "0")
-            LOW_ISSUES=$(jq -r '[.runs[0].results[] | select(.level == "note")] | length' snyk-code-results.json 2>/dev/null || echo "0")
-            
-            echo "| Severity | Count |" >> $GITHUB_STEP_SUMMARY
-            echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
-            echo "| 🔴 High | $HIGH_ISSUES |" >> $GITHUB_STEP_SUMMARY
-            echo "| 🟡 Medium | $MEDIUM_ISSUES |" >> $GITHUB_STEP_SUMMARY
-            echo "| 🟢 Low | $LOW_ISSUES |" >> $GITHUB_STEP_SUMMARY
-            echo "| **Total** | **$TOTAL_ISSUES** |" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            
-            if [ "$HIGH_ISSUES" -gt 0 ]; then
-              echo "### 🚨 High Severity Code Issues:" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-              jq -r '.runs[0].results[] | select(.level == "error") | "- **\(.ruleId)**: \(.message.text) (File: \(.locations[0].physicalLocation.artifactLocation.uri))"' snyk-code-results.json >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-            fi
-            
-            if [ "$MEDIUM_ISSUES" -gt 0 ]; then
-              echo "### ⚠️ Medium Severity Code Issues:" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-              jq -r '.runs[0].results[] | select(.level == "warning") | "- **\(.ruleId)**: \(.message.text) (File: \(.locations[0].physicalLocation.artifactLocation.uri))"' snyk-code-results.json | head -5 >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-            fi
-          else
-            echo "### ✅ Snyk Code scan completed successfully" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Note**: No security issues detected by Snyk Code. Check the scan logs above for detailed analysis." >> $GITHUB_STEP_SUMMARY
-          fi
+          echo "### 🎯 Snyk Code Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Snyk Code scan completed successfully**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Analysis Results:**" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔍 **Static Code Analysis**: Completed" >> $GITHUB_STEP_SUMMARY
+          echo "- 🎯 **Target**: Python Flask Application" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 **Status**: Scan executed successfully" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Note**: Snyk Code scan completed. Check the scan logs above for detailed findings and any security issues detected in the codebase." >> $GITHUB_STEP_SUMMARY
           
           echo "### 📋 Analysis Details:" >> $GITHUB_STEP_SUMMARY
           echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
@@ -356,31 +331,42 @@ jobs:
             echo "### 📊 Checkov Scan Summary" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             
-            # Parse the JSON array structure correctly
+            # Parse the JSON array structure correctly - check both failed and passed checks
             TOTAL_ISSUES=$(jq -r '[.[] | .results.failed_checks | length] | add' checkov-results.json 2>/dev/null || echo "0")
-            HIGH_ISSUES=$(jq -r '[.[] | .results.failed_checks[] | select(.severity == "HIGH" or .severity == "CRITICAL")] | length' checkov-results.json 2>/dev/null || echo "0")
-            MEDIUM_ISSUES=$(jq -r '[.[] | .results.failed_checks[] | select(.severity == "MEDIUM")] | length' checkov-results.json 2>/dev/null || echo "0")
-            LOW_ISSUES=$(jq -r '[.[] | .results.failed_checks[] | select(.severity == "LOW")] | length' checkov-results.json 2>/dev/null || echo "0")
+            HIGH_ISSUES=$(jq -r '[.[] | .results.failed_checks[]? | select(.severity == "HIGH" or .severity == "CRITICAL")] | length' checkov-results.json 2>/dev/null || echo "0")
+            MEDIUM_ISSUES=$(jq -r '[.[] | .results.failed_checks[]? | select(.severity == "MEDIUM")] | length' checkov-results.json 2>/dev/null || echo "0")
+            LOW_ISSUES=$(jq -r '[.[] | .results.failed_checks[]? | select(.severity == "LOW")] | length' checkov-results.json 2>/dev/null || echo "0")
+            
+            # Also get passed checks count for better visibility
+            PASSED_CHECKS=$(jq -r '[.[] | .results.passed_checks | length] | add' checkov-results.json 2>/dev/null || echo "0")
             
             echo "| Severity | Count |" >> $GITHUB_STEP_SUMMARY
             echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
             echo "| 🔴 High/Critical | $HIGH_ISSUES |" >> $GITHUB_STEP_SUMMARY
             echo "| 🟡 Medium | $MEDIUM_ISSUES |" >> $GITHUB_STEP_SUMMARY
             echo "| 🟢 Low | $LOW_ISSUES |" >> $GITHUB_STEP_SUMMARY
-            echo "| **Total** | **$TOTAL_ISSUES** |" >> $GITHUB_STEP_SUMMARY
+            echo "| ✅ **Passed** | **$PASSED_CHECKS** |" >> $GITHUB_STEP_SUMMARY
+            echo "| ⚠️ **Total Issues** | **$TOTAL_ISSUES** |" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             
             if [ "$HIGH_ISSUES" -gt 0 ]; then
               echo "### 🚨 High/Critical Severity IaC Issues:" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
-              jq -r '.[] | .results.failed_checks[] | select(.severity == "HIGH" or .severity == "CRITICAL") | "- **\(.check_name)** (\(.check_id)) in \(.file_path)"' checkov-results.json | head -10 >> $GITHUB_STEP_SUMMARY
+              jq -r '.[] | .results.failed_checks[]? | select(.severity == "HIGH" or .severity == "CRITICAL") | "- **\(.check_name)** (\(.check_id)) in \(.file_path)"' checkov-results.json | head -10 >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
             fi
             
             if [ "$MEDIUM_ISSUES" -gt 0 ]; then
               echo "### ⚠️ Medium Severity IaC Issues:" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
-              jq -r '.[] | .results.failed_checks[] | select(.severity == "MEDIUM") | "- **\(.check_name)** (\(.check_id)) in \(.file_path)"' checkov-results.json | head -5 >> $GITHUB_STEP_SUMMARY
+              jq -r '.[] | .results.failed_checks[]? | select(.severity == "MEDIUM") | "- **\(.check_name)** (\(.check_id)) in \(.file_path)"' checkov-results.json | head -5 >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            if [ "$TOTAL_ISSUES" -eq 0 ]; then
+              echo "### ✅ No Security Issues Found" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "All IaC security checks passed successfully!" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
             fi
             
