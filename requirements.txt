@@ -3,8 +3,8 @@ Flask==2.3.3
 urllib3==1.24.1  # Known vulnerabilities
 requests==2.20.0  # Known vulnerabilities  
 pyyaml==5.1  # Known vulnerabilities
-jinja2==2.10.1  # Known vulnerabilities
-markupsafe==1.1.0  # Known vulnerabilities
+jinja2==3.1.2  # Compatible with Flask 2.3.3 but still has vulnerabilities
+markupsafe==2.0.1  # Compatible with jinja2 3.1.2 but still has vulnerabilities
 cryptography==3.2.1  # Known vulnerabilities
 pillow==6.0.0  # Known vulnerabilities
 django==2.2.0  # Known vulnerabilities
