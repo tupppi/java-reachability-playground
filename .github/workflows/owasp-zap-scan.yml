@@ -68,74 +68,62 @@ jobs:
             echo "### 📊 ZAP Scan Summary" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             
-            # Extract scan statistics from ZAP JSON report (handle different JSON structures)
-            TOTAL_ALERTS=$(jq -r '.site[].alerts | length' report_json.json 2>/dev/null | awk '{sum += $1} END {print sum+0}' || echo "0")
-            
-            # Count vulnerabilities by risk level (handle different field names)
-            HIGH_RISK=$(jq -r '.site[].alerts[]? | select(.risk == "High" or .riskcode == "3") | .name' report_json.json 2>/dev/null | wc -l || echo "0")
-            MEDIUM_RISK=$(jq -r '.site[].alerts[]? | select(.risk == "Medium" or .riskcode == "2") | .name' report_json.json 2>/dev/null | wc -l || echo "0")
-            LOW_RISK=$(jq -r '.site[].alerts[]? | select(.risk == "Low" or .riskcode == "1") | .name' report_json.json 2>/dev/null | wc -l || echo "0")
-            INFO_RISK=$(jq -r '.site[].alerts[]? | select(.risk == "Informational" or .riskcode == "0") | .name' report_json.json 2>/dev/null | wc -l || echo "0")
-            
-            # Based on the logs, we know ZAP found 18 WARN-NEW vulnerabilities
-            echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
-            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-            echo "| 🌐 URLs Scanned | 24 |" >> $GITHUB_STEP_SUMMARY
-            echo "| 🔍 Total Alerts | 18 |" >> $GITHUB_STEP_SUMMARY
-            echo "| 🔴 High Risk | 2 |" >> $GITHUB_STEP_SUMMARY
-            echo "| 🟡 Medium Risk | 8 |" >> $GITHUB_STEP_SUMMARY
-            echo "| 🟢 Low Risk | 8 |" >> $GITHUB_STEP_SUMMARY
-            echo "| ℹ️ Informational | 0 |" >> $GITHUB_STEP_SUMMARY
+            # First, let's examine the JSON structure to understand it
+            echo "🔍 Debugging ZAP JSON structure..." >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             
-            # Show high risk vulnerabilities based on ZAP logs
-            echo "### 🚨 High Risk Vulnerabilities" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "- **Remote OS Command Injection**: Command injection vulnerability in /exec endpoint | URL: /exec?cmd=cat /etc/passwd | Confidence: High" >> $GITHUB_STEP_SUMMARY
-            echo "- **Remote OS Command Injection (Time Based)**: Time-based command injection in /exec endpoint | URL: /exec?cmd=ls&sleep 1.0& | Confidence: High" >> $GITHUB_STEP_SUMMARY
+            # Show the first few lines of the JSON to understand structure
+            echo "**JSON Structure Preview:**" >> $GITHUB_STEP_SUMMARY
+            head -10 report_json.json >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             
-            # Show medium risk vulnerabilities
-            echo "### ⚠️ Medium Risk Vulnerabilities" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "- **SQL Injection - SQLite**: SQL injection vulnerability in login endpoint | URL: /login | Confidence: High" >> $GITHUB_STEP_SUMMARY
-            echo "- **Cross Site Scripting (Reflected)**: Reflected XSS in multiple endpoints | URL: /search, /transfer, /guestbook | Confidence: High" >> $GITHUB_STEP_SUMMARY
-            echo "- **Cross Site Scripting (Persistent)**: Stored XSS in guestbook | URL: /guestbook | Confidence: High" >> $GITHUB_STEP_SUMMARY
-            echo "- **Cross Site Scripting (DOM Based)**: DOM-based XSS in multiple endpoints | URL: /exec, /transfer, /login | Confidence: High" >> $GITHUB_STEP_SUMMARY
-            echo "- **Path Traversal**: Directory traversal vulnerability | URL: /read?file=/etc/passwd | Confidence: High" >> $GITHUB_STEP_SUMMARY
-            echo "- **Source Code Disclosure - File Inclusion**: Source code exposure | URL: Multiple endpoints | Confidence: Medium" >> $GITHUB_STEP_SUMMARY
-            echo "- **Source Code Disclosure - SQL**: SQL query exposure | URL: /login | Confidence: Medium" >> $GITHUB_STEP_SUMMARY
-            echo "- **Absence of Anti-CSRF Tokens**: Missing CSRF protection | URL: Forms | Confidence: Medium" >> $GITHUB_STEP_SUMMARY
+            # Try different ways to parse the JSON
+            echo "**Attempting to parse vulnerabilities...**" >> $GITHUB_STEP_SUMMARY
+            
+            # Method 1: Try standard ZAP format
+            TOTAL_ALERTS=$(jq -r '.site[].alerts | length' report_json.json 2>/dev/null | awk '{sum += $1} END {print sum+0}' || echo "Failed")
+            echo "Method 1 - Total alerts: $TOTAL_ALERTS" >> $GITHUB_STEP_SUMMARY
+            
+            # Method 2: Try alternative format
+            TOTAL_ALERTS2=$(jq -r '.alerts | length' report_json.json 2>/dev/null || echo "Failed")
+            echo "Method 2 - Total alerts: $TOTAL_ALERTS2" >> $GITHUB_STEP_SUMMARY
+            
+            # Method 3: Try to find any alerts
+            TOTAL_ALERTS3=$(jq -r '.. | objects | select(has("alerts")) | .alerts | length' report_json.json 2>/dev/null | awk '{sum += $1} END {print sum+0}' || echo "Failed")
+            echo "Method 3 - Total alerts: $TOTAL_ALERTS3" >> $GITHUB_STEP_SUMMARY
+            
+            # Method 4: Count all objects that might be alerts
+            TOTAL_ALERTS4=$(jq -r '.. | select(type == "object" and has("name") and has("risk")) | .name' report_json.json 2>/dev/null | wc -l || echo "Failed")
+            echo "Method 4 - Potential alerts: $TOTAL_ALERTS4" >> $GITHUB_STEP_SUMMARY
+            
             echo "" >> $GITHUB_STEP_SUMMARY
             
-            # Show all vulnerabilities table
-            echo "### 📋 All Security Findings" >> $GITHUB_STEP_SUMMARY
+            # Try to extract actual vulnerability data
+            echo "### 🔍 Raw Vulnerability Data" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "| Risk | Name | Description | URL |" >> $GITHUB_STEP_SUMMARY
-            echo "|------|------|-------------|-----|" >> $GITHUB_STEP_SUMMARY
-            echo "| HIGH | Remote OS Command Injection | Command injection in exec endpoint | /exec |" >> $GITHUB_STEP_SUMMARY
-            echo "| HIGH | Remote OS Command Injection (Time Based) | Time-based command injection | /exec |" >> $GITHUB_STEP_SUMMARY
-            echo "| MEDIUM | SQL Injection - SQLite | SQL injection in login | /login |" >> $GITHUB_STEP_SUMMARY
-            echo "| MEDIUM | Cross Site Scripting (Reflected) | Reflected XSS | /search, /transfer |" >> $GITHUB_STEP_SUMMARY
-            echo "| MEDIUM | Cross Site Scripting (Persistent) | Stored XSS | /guestbook |" >> $GITHUB_STEP_SUMMARY
-            echo "| MEDIUM | Cross Site Scripting (DOM Based) | DOM-based XSS | /exec, /transfer |" >> $GITHUB_STEP_SUMMARY
-            echo "| MEDIUM | Path Traversal | Directory traversal | /read |" >> $GITHUB_STEP_SUMMARY
-            echo "| MEDIUM | Source Code Disclosure - File Inclusion | Source code exposure | Multiple |" >> $GITHUB_STEP_SUMMARY
-            echo "| MEDIUM | Source Code Disclosure - SQL | SQL query exposure | /login |" >> $GITHUB_STEP_SUMMARY
-            echo "| LOW | Missing Anti-clickjacking Header | Missing X-Frame-Options | All pages |" >> $GITHUB_STEP_SUMMARY
-            echo "| LOW | X-Content-Type-Options Header Missing | Missing content type options | All pages |" >> $GITHUB_STEP_SUMMARY
-            echo "| LOW | Server Leaks Version Information | Version disclosure | All pages |" >> $GITHUB_STEP_SUMMARY
-            echo "| LOW | Content Security Policy (CSP) Header Not Set | Missing CSP | All pages |" >> $GITHUB_STEP_SUMMARY
-            echo "| LOW | Permissions Policy Header Not Set | Missing permissions policy | All pages |" >> $GITHUB_STEP_SUMMARY
-            echo "| LOW | Absence of Anti-CSRF Tokens | Missing CSRF protection | Forms |" >> $GITHUB_STEP_SUMMARY
-            echo "| LOW | Anti-CSRF Tokens Check | CSRF token validation | /guestbook |" >> $GITHUB_STEP_SUMMARY
-            echo "| LOW | Insufficient Site Isolation Against Spectre Vulnerability | Spectre vulnerability | All pages |" >> $GITHUB_STEP_SUMMARY
-            echo "| LOW | HTTP Only Site | HTTP-only cookie issues | /guestbook |" >> $GITHUB_STEP_SUMMARY
+            
+            # Show all objects that look like vulnerabilities
+            echo "**Potential Vulnerabilities Found:**" >> $GITHUB_STEP_SUMMARY
+            jq -r '.. | select(type == "object" and has("name") and has("risk")) | "\(.risk | ascii_upcase) | \(.name) | \(.description // .desc // "No description") | \(.url // "Unknown")"' report_json.json 2>/dev/null | head -20 >> $GITHUB_STEP_SUMMARY || echo "No vulnerabilities found with this method" >> $GITHUB_STEP_SUMMARY
+            
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Show the complete JSON for debugging
+            echo "### 📄 Complete ZAP JSON Report" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "<details><summary>Click to view full JSON report</summary>" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo '```json' >> $GITHUB_STEP_SUMMARY
+            cat report_json.json >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "</details>" >> $GITHUB_STEP_SUMMARY
             
           elif [ -f "report_md.md" ]; then
-            echo "### 📄 ZAP Scan Report Available" >> $GITHUB_STEP_SUMMARY
+            echo "### 📄 ZAP Markdown Report Available" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "Markdown report generated successfully. Check the workflow artifacts for detailed results." >> $GITHUB_STEP_SUMMARY
+            echo "**Markdown Report Preview:**" >> $GITHUB_STEP_SUMMARY
+            head -50 report_md.md >> $GITHUB_STEP_SUMMARY
             
           else
             echo "### ❌ No ZAP scan reports found" >> $GITHUB_STEP_SUMMARY
