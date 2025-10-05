@@ -22,8 +22,8 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       with:
         args: >
-          -Dsonar.projectKey=test-python-app
-          -Dsonar.projectName="Test Python App"
+          -Dsonar.projectKey=tupppi_java-reachability-playground
+          -Dsonar.projectName="Java Reachability Playground"
           -Dsonar.organization=tupppi
           -Dsonar.sources=.
           -Dsonar.host.url=https://sonarcloud.io
