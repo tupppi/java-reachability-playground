@@ -1,0 +1,393 @@
+Build and Unit Tests	Set up job	﻿2025-10-05T19:07:07.0868488Z Current runner version: '2.328.0'
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0891095Z ##[group]Runner Image Provisioner
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0892232Z Hosted Compute Agent
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0892827Z Version: 20250912.392
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0893461Z Commit: d921fda672a98b64f4f82364647e2f10b2267d0b
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0894155Z Build Date: 2025-09-12T15:23:14Z
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0894757Z ##[endgroup]
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0895366Z ##[group]Operating System
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0895902Z Ubuntu
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0896429Z 24.04.3
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0896931Z LTS
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0897439Z ##[endgroup]
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0897916Z ##[group]Runner Image
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0898572Z Image: ubuntu-24.04
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0899091Z Version: 20250929.60.1
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0900069Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250929.60/images/ubuntu/Ubuntu2404-Readme.md
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0901785Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250929.60
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0903047Z ##[endgroup]
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0905507Z ##[group]GITHUB_TOKEN Permissions
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0907630Z Actions: write
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0908269Z Attestations: write
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0908798Z Checks: write
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0909273Z Contents: write
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0909836Z Deployments: write
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0910365Z Discussions: write
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0910888Z Issues: write
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0911628Z Metadata: read
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0912105Z Models: read
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0912610Z Packages: write
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0913119Z Pages: write
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0913646Z PullRequests: write
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0914178Z RepositoryProjects: write
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0914774Z SecurityEvents: write
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0915423Z Statuses: write
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0915940Z ##[endgroup]
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0917961Z Secret source: Actions
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.0918678Z Prepare workflow directory
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.1299945Z Prepare all required actions
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.1338863Z Getting action download info
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.5573331Z Download action repository 'actions/checkout@v4' (SHA:08eba0b27e820071cde6df949e0beb9ba4906955)
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.7159445Z Download action repository 'actions/setup-python@v4' (SHA:7f4fc3e22c37d6ff65e88745f38bd3157c663f7c)
+Build and Unit Tests	Set up job	2025-10-05T19:07:07.9088651Z Complete job name: Build and Unit Tests
+Build and Unit Tests	Checkout code	﻿2025-10-05T19:07:07.9746999Z ##[group]Run actions/checkout@v4
+Build and Unit Tests	Checkout code	2025-10-05T19:07:07.9747827Z with:
+Build and Unit Tests	Checkout code	2025-10-05T19:07:07.9748309Z   repository: tupppi/java-reachability-playground
+Build and Unit Tests	Checkout code	2025-10-05T19:07:07.9749036Z   token: ***
+Build and Unit Tests	Checkout code	2025-10-05T19:07:07.9749417Z   ssh-strict: true
+Build and Unit Tests	Checkout code	2025-10-05T19:07:07.9749809Z   ssh-user: git
+Build and Unit Tests	Checkout code	2025-10-05T19:07:07.9750200Z   persist-credentials: true
+Build and Unit Tests	Checkout code	2025-10-05T19:07:07.9750646Z   clean: true
+Build and Unit Tests	Checkout code	2025-10-05T19:07:07.9751040Z   sparse-checkout-cone-mode: true
+Build and Unit Tests	Checkout code	2025-10-05T19:07:07.9751760Z   fetch-depth: 1
+Build and Unit Tests	Checkout code	2025-10-05T19:07:07.9752148Z   fetch-tags: false
+Build and Unit Tests	Checkout code	2025-10-05T19:07:07.9752555Z   show-progress: true
+Build and Unit Tests	Checkout code	2025-10-05T19:07:07.9752954Z   lfs: false
+Build and Unit Tests	Checkout code	2025-10-05T19:07:07.9753331Z   submodules: false
+Build and Unit Tests	Checkout code	2025-10-05T19:07:07.9753739Z   set-safe-directory: true
+Build and Unit Tests	Checkout code	2025-10-05T19:07:07.9754565Z env:
+Build and Unit Tests	Checkout code	2025-10-05T19:07:07.9754966Z   PYTHON_VERSION: 3.9
+Build and Unit Tests	Checkout code	2025-10-05T19:07:07.9755376Z ##[endgroup]
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.0813721Z Syncing repository: tupppi/java-reachability-playground
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.0815527Z ##[group]Getting Git version info
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.0816544Z Working directory is '/home/runner/work/java-reachability-playground/java-reachability-playground'
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.0817850Z [command]/usr/bin/git version
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.0884392Z git version 2.51.0
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.0910008Z ##[endgroup]
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.0924035Z Temporarily overriding HOME='/home/runner/work/_temp/87d160a2-9535-4210-b374-91d07ea69c59' before making global git config changes
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.0925418Z Adding repository directory to the temporary git global config as a safe directory
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.0936078Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/java-reachability-playground/java-reachability-playground
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.0971176Z Deleting the contents of '/home/runner/work/java-reachability-playground/java-reachability-playground'
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.0974577Z ##[group]Initializing the repository
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.0978765Z [command]/usr/bin/git init /home/runner/work/java-reachability-playground/java-reachability-playground
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1074250Z hint: Using 'master' as the name for the initial branch. This default branch name
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1075826Z hint: is subject to change. To configure the initial branch name to use in all
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1077337Z hint: of your new repositories, which will suppress this warning, call:
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1078455Z hint:
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1079177Z hint: 	git config --global init.defaultBranch <name>
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1080106Z hint:
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1080722Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1081897Z hint: 'development'. The just-created branch can be renamed via this command:
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1082615Z hint:
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1083004Z hint: 	git branch -m <name>
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1083438Z hint:
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1084009Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1085707Z Initialized empty Git repository in /home/runner/work/java-reachability-playground/java-reachability-playground/.git/
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1090409Z [command]/usr/bin/git remote add origin https://github.com/tupppi/java-reachability-playground
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1125838Z ##[endgroup]
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1126566Z ##[group]Disabling automatic garbage collection
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1129813Z [command]/usr/bin/git config --local gc.auto 0
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1157513Z ##[endgroup]
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1158206Z ##[group]Setting up auth
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1164210Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1198465Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1523043Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1553890Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1792336Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1833786Z ##[endgroup]
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1834743Z ##[group]Fetching the repository
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.1842133Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +805bbe489e77263c31f9b4d2f6b6281984480a78:refs/remotes/origin/master
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.7819749Z From https://github.com/tupppi/java-reachability-playground
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.7821839Z  * [new ref]         805bbe489e77263c31f9b4d2f6b6281984480a78 -> origin/master
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.7854414Z ##[endgroup]
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.7855749Z ##[group]Determining the checkout info
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.7857195Z ##[endgroup]
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.7861914Z [command]/usr/bin/git sparse-checkout disable
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.7903591Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.7932718Z ##[group]Checking out the ref
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.7936550Z [command]/usr/bin/git checkout --progress --force -B master refs/remotes/origin/master
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.8073471Z Reset branch 'master'
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.8075690Z branch 'master' set up to track 'origin/master'.
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.8082708Z ##[endgroup]
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.8116633Z [command]/usr/bin/git log -1 --format=%H
+Build and Unit Tests	Checkout code	2025-10-05T19:07:08.8138196Z 805bbe489e77263c31f9b4d2f6b6281984480a78
+Build and Unit Tests	Set up Python	﻿2025-10-05T19:07:08.8416284Z ##[group]Run actions/setup-python@v4
+Build and Unit Tests	Set up Python	2025-10-05T19:07:08.8417612Z with:
+Build and Unit Tests	Set up Python	2025-10-05T19:07:08.8418315Z   python-version: 3.9
+Build and Unit Tests	Set up Python	2025-10-05T19:07:08.8419139Z   check-latest: false
+Build and Unit Tests	Set up Python	2025-10-05T19:07:08.8420235Z   token: ***
+Build and Unit Tests	Set up Python	2025-10-05T19:07:08.8420980Z   update-environment: true
+Build and Unit Tests	Set up Python	2025-10-05T19:07:08.8422166Z   allow-prereleases: false
+Build and Unit Tests	Set up Python	2025-10-05T19:07:08.8423026Z env:
+Build and Unit Tests	Set up Python	2025-10-05T19:07:08.8423694Z   PYTHON_VERSION: 3.9
+Build and Unit Tests	Set up Python	2025-10-05T19:07:08.8424482Z ##[endgroup]
+Build and Unit Tests	Set up Python	2025-10-05T19:07:09.0082085Z ##[group]Installed versions
+Build and Unit Tests	Set up Python	2025-10-05T19:07:09.0192097Z Successfully set up CPython (3.9.23)
+Build and Unit Tests	Set up Python	2025-10-05T19:07:09.0194895Z ##[endgroup]
+Build and Unit Tests	Install Python dependencies	﻿2025-10-05T19:07:09.0327805Z ##[group]Run python -m pip install --upgrade pip
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:09.0329342Z [36;1mpython -m pip install --upgrade pip[0m
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:09.0331072Z [36;1mif [ -f requirements.txt ]; then pip install -r requirements.txt; fi[0m
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:09.0469287Z shell: /usr/bin/bash -e {0}
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:09.0470306Z env:
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:09.0471084Z   PYTHON_VERSION: 3.9
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:09.0472629Z   pythonLocation: /opt/hostedtoolcache/Python/3.9.23/x64
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:09.0474436Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.9.23/x64/lib/pkgconfig
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:09.0476202Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.9.23/x64
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:09.0477776Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.9.23/x64
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:09.0479370Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.9.23/x64
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:09.0480964Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.9.23/x64/lib
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:09.0482458Z ##[endgroup]
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:13.3026474Z Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.9.23/x64/lib/python3.9/site-packages (25.2)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:13.9978753Z Collecting Flask==2.3.3 (from -r requirements.txt (line 1))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:14.0767416Z   Downloading flask-2.3.3-py3-none-any.whl.metadata (3.6 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:14.1263268Z Collecting urllib3==1.24.1 (from -r requirements.txt (line 3))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:14.1468240Z   Downloading urllib3-1.24.1-py2.py3-none-any.whl.metadata (34 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:14.2149406Z Collecting requests==2.20.0 (from -r requirements.txt (line 4))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:14.2358971Z   Downloading requests-2.20.0-py2.py3-none-any.whl.metadata (5.6 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:14.3152224Z Collecting pyyaml==5.1 (from -r requirements.txt (line 5))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:14.3794785Z   Downloading PyYAML-5.1.tar.gz (274 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:14.5669748Z   Installing build dependencies: started
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:15.5344494Z   Installing build dependencies: finished with status 'done'
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:15.5354055Z   Getting requirements to build wheel: started
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:15.9579050Z   Getting requirements to build wheel: finished with status 'done'
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:15.9593075Z   Preparing metadata (pyproject.toml): started
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:16.1205056Z   Preparing metadata (pyproject.toml): finished with status 'done'
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:16.1599617Z Collecting jinja2==3.1.2 (from -r requirements.txt (line 6))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:16.1808738Z   Downloading Jinja2-3.1.2-py3-none-any.whl.metadata (3.5 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:16.2669915Z Collecting markupsafe==2.0.1 (from -r requirements.txt (line 7))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:16.2883768Z   Downloading MarkupSafe-2.0.1-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl.metadata (3.2 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:16.5410207Z Collecting cryptography==3.2.1 (from -r requirements.txt (line 8))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:16.5628755Z   Downloading cryptography-3.2.1-cp35-abi3-manylinux2010_x86_64.whl.metadata (5.2 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:16.7966788Z Collecting pillow==6.0.0 (from -r requirements.txt (line 9))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:16.8188066Z   Downloading Pillow-6.0.0.tar.gz (29.5 MB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:17.2164863Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 29.5/29.5 MB 75.4 MB/s  0:00:00
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:17.7666669Z   Installing build dependencies: started
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:18.5133824Z   Installing build dependencies: finished with status 'done'
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:18.5142268Z   Getting requirements to build wheel: started
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:18.9877388Z   Getting requirements to build wheel: finished with status 'done'
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:18.9890066Z   Preparing metadata (pyproject.toml): started
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:19.1926152Z   Preparing metadata (pyproject.toml): finished with status 'done'
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:19.2852327Z Collecting django==2.2.0 (from -r requirements.txt (line 10))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:19.3169197Z   Downloading Django-2.2-py3-none-any.whl.metadata (3.5 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:19.5667828Z Collecting lxml==4.2.5 (from -r requirements.txt (line 11))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:19.5891849Z   Downloading lxml-4.2.5.tar.gz (4.4 MB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:19.6498998Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.4/4.4 MB 73.0 MB/s  0:00:00
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:20.0418507Z   Installing build dependencies: started
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:20.7842248Z   Installing build dependencies: finished with status 'done'
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:20.7851487Z   Getting requirements to build wheel: started
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:21.2834948Z   Getting requirements to build wheel: finished with status 'done'
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:21.2847480Z   Preparing metadata (pyproject.toml): started
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:21.5923713Z   Preparing metadata (pyproject.toml): finished with status 'done'
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:21.6369860Z Collecting Werkzeug>=2.3.7 (from Flask==2.3.3->-r requirements.txt (line 1))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:21.6585746Z   Downloading werkzeug-3.1.3-py3-none-any.whl.metadata (3.7 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:21.6908015Z Collecting itsdangerous>=2.1.2 (from Flask==2.3.3->-r requirements.txt (line 1))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:21.7105568Z   Downloading itsdangerous-2.2.0-py3-none-any.whl.metadata (1.9 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:21.7456968Z Collecting click>=8.1.3 (from Flask==2.3.3->-r requirements.txt (line 1))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:21.7672135Z   Downloading click-8.1.8-py3-none-any.whl.metadata (2.3 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:21.7947820Z Collecting blinker>=1.6.2 (from Flask==2.3.3->-r requirements.txt (line 1))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:21.8155190Z   Downloading blinker-1.9.0-py3-none-any.whl.metadata (1.6 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:21.8704247Z Collecting importlib-metadata>=3.6.0 (from Flask==2.3.3->-r requirements.txt (line 1))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:21.8906634Z   Downloading importlib_metadata-8.7.0-py3-none-any.whl.metadata (4.8 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:21.9252727Z Collecting chardet<3.1.0,>=3.0.2 (from requests==2.20.0->-r requirements.txt (line 4))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:21.9447773Z   Downloading chardet-3.0.4-py2.py3-none-any.whl.metadata (3.2 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:21.9748483Z Collecting idna<2.8,>=2.5 (from requests==2.20.0->-r requirements.txt (line 4))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:21.9956710Z   Downloading idna-2.7-py2.py3-none-any.whl.metadata (8.9 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.0413190Z Collecting certifi>=2017.4.17 (from requests==2.20.0->-r requirements.txt (line 4))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.0609164Z   Downloading certifi-2025.10.5-py3-none-any.whl.metadata (2.5 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.0991956Z Collecting six>=1.4.1 (from cryptography==3.2.1->-r requirements.txt (line 8))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.1186882Z   Downloading six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.2959483Z Collecting cffi!=1.11.3,>=1.8 (from cryptography==3.2.1->-r requirements.txt (line 8))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.3161165Z   Downloading cffi-2.0.0-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.6 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.3787916Z Collecting pytz (from django==2.2.0->-r requirements.txt (line 10))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.3984203Z   Downloading pytz-2025.2-py2.py3-none-any.whl.metadata (22 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.4316604Z Collecting sqlparse (from django==2.2.0->-r requirements.txt (line 10))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.4511902Z   Downloading sqlparse-0.5.3-py3-none-any.whl.metadata (3.9 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.4840023Z Collecting pycparser (from cffi!=1.11.3,>=1.8->cryptography==3.2.1->-r requirements.txt (line 8))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.5037533Z   Downloading pycparser-2.23-py3-none-any.whl.metadata (993 bytes)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.5430901Z Collecting zipp>=3.20 (from importlib-metadata>=3.6.0->Flask==2.3.3->-r requirements.txt (line 1))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.5626764Z   Downloading zipp-3.23.0-py3-none-any.whl.metadata (3.6 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.5764358Z INFO: pip is looking at multiple versions of werkzeug to determine which version is compatible with other requirements. This could take a while.
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.5768390Z Collecting Werkzeug>=2.3.7 (from Flask==2.3.3->-r requirements.txt (line 1))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.5989486Z   Downloading werkzeug-3.1.2-py3-none-any.whl.metadata (3.7 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.6253386Z   Downloading werkzeug-3.1.1-py3-none-any.whl.metadata (3.7 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.6509190Z   Downloading werkzeug-3.1.0-py3-none-any.whl.metadata (3.7 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.6762039Z   Downloading werkzeug-3.0.6-py3-none-any.whl.metadata (3.7 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.7027547Z   Downloading werkzeug-3.0.5-py3-none-any.whl.metadata (3.7 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.7278070Z   Downloading werkzeug-3.0.4-py3-none-any.whl.metadata (3.7 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.7543304Z   Downloading werkzeug-3.0.3-py3-none-any.whl.metadata (3.7 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.7587544Z INFO: pip is still looking at multiple versions of werkzeug to determine which version is compatible with other requirements. This could take a while.
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.7808828Z   Downloading werkzeug-3.0.2-py3-none-any.whl.metadata (4.1 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.8070694Z   Downloading werkzeug-3.0.1-py3-none-any.whl.metadata (4.1 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.8329556Z   Downloading werkzeug-3.0.0-py3-none-any.whl.metadata (4.1 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.8590667Z   Downloading werkzeug-2.3.8-py3-none-any.whl.metadata (4.1 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.8842086Z   Downloading werkzeug-2.3.7-py3-none-any.whl.metadata (4.1 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.8890376Z INFO: This is taking longer than usual. You might need to provide the dependency resolver with stricter constraints to reduce runtime. See https://pip.pypa.io/warnings/backtracking for guidance. If you want to abort this run, press Ctrl + C.
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.9120091Z Collecting six>=1.4.1 (from cryptography==3.2.1->-r requirements.txt (line 8))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.9321012Z   Downloading six-1.16.0-py2.py3-none-any.whl.metadata (1.8 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.9522829Z Collecting importlib-metadata>=3.6.0 (from Flask==2.3.3->-r requirements.txt (line 1))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.9733666Z   Downloading importlib_metadata-8.6.1-py3-none-any.whl.metadata (4.7 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:22.9978194Z Collecting click>=8.1.3 (from Flask==2.3.3->-r requirements.txt (line 1))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.0172466Z   Downloading click-8.1.7-py3-none-any.whl.metadata (3.0 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.0370447Z Collecting cffi!=1.11.3,>=1.8 (from cryptography==3.2.1->-r requirements.txt (line 8))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.0581594Z   Downloading cffi-1.17.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (1.5 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.0776566Z Collecting certifi>=2017.4.17 (from requests==2.20.0->-r requirements.txt (line 4))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.0984343Z   Downloading certifi-2025.8.3-py3-none-any.whl.metadata (2.4 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.1173114Z Collecting blinker>=1.6.2 (from Flask==2.3.3->-r requirements.txt (line 1))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.1380145Z   Downloading blinker-1.8.2-py3-none-any.whl.metadata (1.6 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.1563650Z Collecting idna<2.8,>=2.5 (from requests==2.20.0->-r requirements.txt (line 4))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.1769386Z   Downloading idna-2.6-py2.py3-none-any.whl.metadata (8.9 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.1962987Z Collecting chardet<3.1.0,>=3.0.2 (from requests==2.20.0->-r requirements.txt (line 4))
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2172475Z   Downloading chardet-3.0.3-py2.py3-none-any.whl.metadata (3.4 kB)
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2365897Z ERROR: Cannot install -r requirements.txt (line 6), Flask and markupsafe==2.0.1 because these package versions have conflicting dependencies.
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2373137Z 
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2373356Z The conflict is caused by:
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2373752Z     The user requested markupsafe==2.0.1
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2374195Z     jinja2 3.1.2 depends on MarkupSafe>=2.0
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2374658Z     werkzeug 3.1.3 depends on MarkupSafe>=2.1.1
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2375118Z     werkzeug 3.1.2 depends on MarkupSafe>=2.1.1
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2375955Z     werkzeug 3.1.1 depends on MarkupSafe>=2.1.1
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2376400Z     werkzeug 3.1.0 depends on MarkupSafe>=2.1.1
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2376836Z     werkzeug 3.0.6 depends on MarkupSafe>=2.1.1
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2377129Z     werkzeug 3.0.5 depends on MarkupSafe>=2.1.1
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2377426Z     werkzeug 3.0.4 depends on MarkupSafe>=2.1.1
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2377708Z     werkzeug 3.0.3 depends on MarkupSafe>=2.1.1
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2377989Z     werkzeug 3.0.2 depends on MarkupSafe>=2.1.1
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2378266Z     werkzeug 3.0.1 depends on MarkupSafe>=2.1.1
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2378710Z     werkzeug 3.0.0 depends on MarkupSafe>=2.1.1
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2379007Z     werkzeug 2.3.8 depends on MarkupSafe>=2.1.1
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2379296Z     werkzeug 2.3.7 depends on MarkupSafe>=2.1.1
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2379485Z 
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2379583Z To fix this you could try to:
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2379875Z 1. loosen the range of package versions you've specified
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2380505Z 2. remove package versions to allow pip to attempt to solve the dependency conflict
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2380821Z 
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.2385856Z ERROR: ResolutionImpossible: for help visit https://pip.pypa.io/en/latest/topics/dependency-resolution/#dealing-with-dependency-conflicts
+Build and Unit Tests	Install Python dependencies	2025-10-05T19:07:23.4957399Z ##[error]Process completed with exit code 1.
+Build and Unit Tests	Post Checkout code	﻿2025-10-05T19:07:23.5135557Z Post job cleanup.
+Build and Unit Tests	Post Checkout code	2025-10-05T19:07:23.6063680Z [command]/usr/bin/git version
+Build and Unit Tests	Post Checkout code	2025-10-05T19:07:23.6098739Z git version 2.51.0
+Build and Unit Tests	Post Checkout code	2025-10-05T19:07:23.6140786Z Temporarily overriding HOME='/home/runner/work/_temp/f9f90192-9caf-4cfc-b25b-cb1c1c564552' before making global git config changes
+Build and Unit Tests	Post Checkout code	2025-10-05T19:07:23.6142241Z Adding repository directory to the temporary git global config as a safe directory
+Build and Unit Tests	Post Checkout code	2025-10-05T19:07:23.6146860Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/java-reachability-playground/java-reachability-playground
+Build and Unit Tests	Post Checkout code	2025-10-05T19:07:23.6181604Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Build and Unit Tests	Post Checkout code	2025-10-05T19:07:23.6213245Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Build and Unit Tests	Post Checkout code	2025-10-05T19:07:23.6437229Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Build and Unit Tests	Post Checkout code	2025-10-05T19:07:23.6459395Z http.https://github.com/.extraheader
+Build and Unit Tests	Post Checkout code	2025-10-05T19:07:23.6471963Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+Build and Unit Tests	Post Checkout code	2025-10-05T19:07:23.6501453Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Build and Unit Tests	Complete job	﻿2025-10-05T19:07:23.6819116Z Cleaning up orphan processes
+Complete Security Pipeline Summary	Set up job	﻿2025-10-05T19:07:29.3391568Z Current runner version: '2.328.0'
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3429048Z ##[group]Runner Image Provisioner
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3430417Z Hosted Compute Agent
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3431298Z Version: 20250912.392
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3432192Z Commit: d921fda672a98b64f4f82364647e2f10b2267d0b
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3433695Z Build Date: 2025-09-12T15:23:14Z
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3434582Z ##[endgroup]
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3435476Z ##[group]Operating System
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3437414Z Ubuntu
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3438262Z 24.04.3
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3438982Z LTS
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3439923Z ##[endgroup]
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3440708Z ##[group]Runner Image
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3441743Z Image: ubuntu-24.04
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3443072Z Version: 20250929.60.1
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3444978Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250929.60/images/ubuntu/Ubuntu2404-Readme.md
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3447607Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250929.60
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3449639Z ##[endgroup]
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3454352Z ##[group]GITHUB_TOKEN Permissions
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3457366Z Actions: write
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3458212Z Attestations: write
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3459036Z Checks: write
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3459915Z Contents: write
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3460793Z Deployments: write
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3461620Z Discussions: write
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3462388Z Issues: write
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3463413Z Metadata: read
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3464227Z Models: read
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3465185Z Packages: write
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3466123Z Pages: write
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3466963Z PullRequests: write
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3468015Z RepositoryProjects: write
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3469041Z SecurityEvents: write
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3470140Z Statuses: write
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3471778Z ##[endgroup]
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3475802Z Secret source: Actions
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.3477392Z Prepare workflow directory
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.4078972Z Prepare all required actions
+Complete Security Pipeline Summary	Set up job	2025-10-05T19:07:29.4160035Z Complete job name: Complete Security Pipeline Summary
+Complete Security Pipeline Summary	Generate comprehensive security summary	﻿2025-10-05T19:07:29.5121656Z ##[group]Run echo "## 🛡️ Complete DevSecOps Security Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5123317Z [36;1mecho "## 🛡️ Complete DevSecOps Security Pipeline Summary" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5124295Z [36;1mecho "" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5124895Z [36;1m[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5125407Z [36;1mecho "<details>" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5126445Z [36;1mecho "<summary><strong>📊 Executive Security Summary</strong></summary>" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5127359Z [36;1mecho "" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5128075Z [36;1mecho "### 🎯 Pipeline Overview" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5128841Z [36;1mecho "" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5129786Z [36;1mecho "This comprehensive security pipeline executed the following scans:" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5130846Z [36;1mecho "" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5131756Z [36;1mecho "| Security Scan Type | Tool | Status |" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5132752Z [36;1mecho "|-------------------|------|--------|" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5133654Z [36;1mecho "| 🔍 **SAST** (Static Analysis) | SonarQube | skipped |" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5134737Z [36;1mecho "| 🔒 **SCA** (Dependencies) | Snyk | skipped |" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5135770Z [36;1mecho "| 🌐 **DAST** (Dynamic Testing) | OWASP ZAP | skipped |" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5136739Z [36;1mecho "| 🏗️ **IaC Security** | Checkov, TFSec | skipped |" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5137806Z [36;1mecho "| 🐳 **Container Security** | Trivy | skipped |" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5138768Z [36;1mecho "| 🔐 **Secrets Scanning** | TruffleHog | skipped |" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5139898Z [36;1mecho "" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5140580Z [36;1m[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5141184Z [36;1mecho "### 📊 Pipeline Execution Summary" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5141923Z [36;1mecho "" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5142893Z [36;1mecho "✅ **All security scans completed successfully**" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5143741Z [36;1mecho "" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5144405Z [36;1mecho "**Scan Coverage:**" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5145311Z [36;1mecho "- 🔍 **SAST**: Static code analysis with SonarQube" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5146412Z [36;1mecho "- 🔒 **SCA**: Dependency vulnerability scanning with Snyk" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5147489Z [36;1mecho "- 🌐 **DAST**: Dynamic application testing with OWASP ZAP" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5148660Z [36;1mecho "- 🏗️ **IaC**: Infrastructure security with Checkov & TFSec" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5149843Z [36;1mecho "- 🐳 **Container**: Container vulnerability scanning with Trivy" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5150988Z [36;1mecho "- 🔐 **Secrets**: Hardcoded secrets detection with TruffleHog" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5151946Z [36;1mecho "" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5152537Z [36;1m[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5153262Z [36;1mecho "### 📋 Next Steps" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5154002Z [36;1mecho "" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5154920Z [36;1mecho "1. **📖 Review Results**: Expand each scan section above to see detailed findings" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5156277Z [36;1mecho "2. **🎯 Prioritize Issues**: Focus on High and Critical severity vulnerabilities first" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5157614Z [36;1mecho "3. **🔧 Implement Fixes**: Address security issues systematically" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5158837Z [36;1mecho "4. **🔄 Re-scan**: Run the pipeline again after fixes to verify improvements" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5160010Z [36;1mecho "" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5160598Z [36;1m[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5161235Z [36;1mecho "### 🔗 External Dashboards & Reports" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5162040Z [36;1mecho "" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5163566Z [36;1mecho "- 📊 **[SonarQube Dashboard](https://sonarcloud.io/dashboard?id=tupppi_java-reachability-playground&branch=master)**" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5165367Z [36;1mecho "- 🔒 **[GitHub Security Tab](https://github.com/tupppi/java-reachability-playground/security)**" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5166600Z [36;1mecho "- 📋 **[Snyk Dashboard](https://app.snyk.io/)**" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5167456Z [36;1mecho "" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5168056Z [36;1m[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5168589Z [36;1mecho "### 📈 Pipeline Metrics" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5169357Z [36;1mecho "" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5170012Z [36;1mecho "| Metric | Value |" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5170735Z [36;1mecho "|--------|-------|" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5171534Z [36;1mecho "| **Total Scan Jobs** | 6 |" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5172344Z [36;1mecho "| **Parallel Execution** | ✅ |" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5173476Z [36;1mecho "| **Security Coverage** | SAST, DAST, SCA, IaC, Container, Secrets |" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5174544Z [36;1mecho "| **Scan Duration** | ~5-10 minutes |" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5175719Z [36;1mecho "| **Target Application** | Python Flask (Intentionally Vulnerable) |" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5176767Z [36;1mecho "" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5177650Z [36;1mecho "</details>" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5178256Z [36;1m[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5179032Z [36;1mecho "5. **📊 Monitor**: Set up continuous security monitoring in production" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5180250Z [36;1mecho "6. **🛡️ Integrate**: Use this pipeline in your CI/CD for continuous security" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5181252Z [36;1mecho "" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5181790Z [36;1m[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5182251Z [36;1mecho "---" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5183357Z [36;1mecho "📅 **Complete DevSecOps Pipeline executed at**: $(date)" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5184515Z [36;1mecho "🎯 **Target Repository**: tupppi/java-reachability-playground" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5185532Z [36;1mecho "🌿 **Branch**: master" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5186358Z [36;1mecho "👤 **Triggered by**: tupppi" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5187501Z [36;1mecho "⚡ **Pipeline**: Complete DevSecOps Security Pipeline - SAST, DAST, SCA, IaC & More" >> $GITHUB_STEP_SUMMARY[0m
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5584115Z shell: /usr/bin/bash -e {0}
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5585409Z env:
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5585964Z   PYTHON_VERSION: 3.9
+Complete Security Pipeline Summary	Generate comprehensive security summary	2025-10-05T19:07:29.5586457Z ##[endgroup]
+Complete Security Pipeline Summary	Complete job	﻿2025-10-05T19:07:29.6022466Z Cleaning up orphan processes

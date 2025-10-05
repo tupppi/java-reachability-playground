@@ -4,11 +4,15 @@ FROM python:3.9-slim
 # Use root user (vulnerability)
 USER root
 
-# Install vulnerable packages
+# Install vulnerable packages (using available versions)
 RUN apt-get update && apt-get install -y \
-    openssl=1.1.1f-1ubuntu2 \
-    curl=7.68.0-1ubuntu2 \
-    wget=1.20.3-1ubuntu1 \
+    openssl \
+    curl \
+    wget \
+    build-essential \
+    libssl-dev \
+    libffi-dev \
+    python3-dev \
     # Don't clean up to keep vulnerable packages
     && rm -rf /var/lib/apt/lists/*
 

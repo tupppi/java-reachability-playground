@@ -119,7 +119,8 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --severity-threshold=low --json-file-output=snyk-code-results.json
+          command: code
+          args: --severity-threshold=low --json-file-output=snyk-code-results.json --debug
           
       - name: Parse and display Snyk Code results
         if: always()
@@ -192,7 +193,8 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --json-file-output=snyk-python-results.json
+          command: test
+          args: --file=requirements.txt --json-file-output=snyk-python-results.json --debug
           
       - name: Parse and display Snyk results
         if: always()
@@ -273,8 +275,11 @@ jobs:
           
       - name: Download OWASP Dependency Check
         run: |
-          wget https://github.com/jeremylong/DependencyCheck/releases/latest/download/dependency-check-9.0.4-release.zip
-          unzip dependency-check-9.0.4-release.zip
+          # Download OWASP Dependency Check (use latest stable version)
+          wget -O dependency-check.zip https://github.com/jeremylong/DependencyCheck/releases/download/v12.1.0/dependency-check-12.1.0-release.zip
+          unzip dependency-check.zip
+          # Rename the extracted directory to match the expected path
+          mv dependency-check-12.1.0 dependency-check
           
       - name: Run OWASP Dependency Check
         id: owasp-dependency-check
@@ -559,7 +564,7 @@ jobs:
           output: 'trivy-results.sarif'
           
       - name: Upload Trivy scan results to GitHub Security tab
-        if: hashFiles('**/Dockerfile') != '' && always()
+        if: always() && hashFiles('trivy-results.sarif') != ''
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'trivy-results.sarif'
@@ -603,7 +608,7 @@ jobs:
           path: ./
           base: main
           head: HEAD
-          extra_args: --json --output secrets-results.json
+          extra_args: --json --output-file secrets-results.json
           
       - name: Parse and display secrets results
         if: always()
