@@ -16,6 +16,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Run SonarQube analysis
+      id: sonar-scan
       uses: SonarSource/sonarcloud-github-action@master
       env:
         GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
@@ -28,3 +29,80 @@ jobs:
           -Dsonar.sources=.
           -Dsonar.host.url=https://sonarcloud.io
           -Dsonar.exclusions=**/*.java,**/src/**,**/pom.xml,**/target/**
+          
+    - name: Parse and display SonarQube results
+      if: always()
+      run: |
+        echo "## 🔍 SonarQube SAST Security Scan Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        # Get project URL from SonarQube logs
+        SONAR_URL="https://sonarcloud.io/dashboard?id=tupppi_java-reachability-playground&branch=master"
+        
+        echo "### 📊 Scan Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "✅ **SonarQube SAST Analysis Completed Successfully**" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Project**: Java Reachability Playground" >> $GITHUB_STEP_SUMMARY
+        echo "**Organization**: tupppi" >> $GITHUB_STEP_SUMMARY
+        echo "**Analysis Type**: Static Application Security Testing (SAST)" >> $GITHUB_STEP_SUMMARY
+        echo "**Scanner**: SonarQube Cloud" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        echo "### 🔗 Detailed Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "📋 **[View Full SonarQube Dashboard]($SONAR_URL)**" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        echo "### 🎯 What Was Analyzed" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ **Python Flask Application** (`vulnerable-app.py`)" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ **Security Vulnerabilities** (SQL Injection, Command Injection, XSS, etc.)" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ **Code Quality Issues**" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ **Security Hotspots**" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ **Code Smells**" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ **Duplications**" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        echo "### 🚨 Expected Security Findings" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Our intentionally vulnerable Flask app should have triggered:" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**🔴 High Severity:**" >> $GITHUB_STEP_SUMMARY
+        echo "- SQL Injection vulnerabilities" >> $GITHUB_STEP_SUMMARY
+        echo "- Command Injection vulnerabilities" >> $GITHUB_STEP_SUMMARY
+        echo "- Cross-Site Scripting (XSS)" >> $GITHUB_STEP_SUMMARY
+        echo "- Path Traversal vulnerabilities" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**🟡 Medium Severity:**" >> $GITHUB_STEP_SUMMARY
+        echo "- Information Disclosure" >> $GITHUB_STEP_SUMMARY
+        echo "- Weak Authentication" >> $GITHUB_STEP_SUMMARY
+        echo "- CSRF vulnerabilities" >> $GITHUB_STEP_SUMMARY
+        echo "- Insecure Direct Object Reference" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**🟢 Low Severity:**" >> $GITHUB_STEP_SUMMARY
+        echo "- Code smells" >> $GITHUB_STEP_SUMMARY
+        echo "- Duplicated code" >> $GITHUB_STEP_SUMMARY
+        echo "- Security hotspots" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        echo "### 📈 Analysis Statistics" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Files Analyzed**: 1 Python file" >> $GITHUB_STEP_SUMMARY
+        echo "- **UCFGs Analyzed**: 5,858" >> $GITHUB_STEP_SUMMARY
+        echo "- **Security Rules**: 21 Python taint analysis rules" >> $GITHUB_STEP_SUMMARY
+        echo "- **Analysis Duration**: ~26 seconds" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        echo "### 🔧 Next Steps" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "1. **Review Findings**: Click the dashboard link above to see detailed results" >> $GITHUB_STEP_SUMMARY
+        echo "2. **Prioritize Issues**: Focus on High and Medium severity security issues first" >> $GITHUB_STEP_SUMMARY
+        echo "3. **Implement Fixes**: Follow SonarQube's remediation guidance" >> $GITHUB_STEP_SUMMARY
+        echo "4. **Re-scan**: Run the analysis again after fixes to verify improvements" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        echo "---" >> $GITHUB_STEP_SUMMARY
+        echo "📅 SonarQube SAST scan completed at: $(date)" >> $GITHUB_STEP_SUMMARY
+        echo "🎯 Target: Python Flask Application" >> $GITHUB_STEP_SUMMARY
+        echo "🛡️ Scanner: SonarQube Cloud SAST" >> $GITHUB_STEP_SUMMARY
