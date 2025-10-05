@@ -57,116 +57,116 @@ jobs:
           allow_issue_writing: false
           docker_name: 'ghcr.io/zaproxy/zaproxy:stable'
           
-             - name: Parse and display ZAP scan results
-               if: always()
-               run: |
-                 echo "## 🔍 OWASP ZAP DAST Security Scan Results" >> $GITHUB_STEP_SUMMARY
-                 echo "" >> $GITHUB_STEP_SUMMARY
+      - name: Parse and display ZAP scan results
+        if: always()
+        run: |
+          echo "## 🔍 OWASP ZAP DAST Security Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
                  
-                 # Check if ZAP scan reports exist
-                 if [ -f "report_json.json" ]; then
-                   echo "### 📊 ZAP Scan Summary" >> $GITHUB_STEP_SUMMARY
-                   echo "" >> $GITHUB_STEP_SUMMARY
-                   
-                   # Extract vulnerability counts by severity
-                   TOTAL_ALERTS=$(jq -r '.site[].alerts | length' report_json.json 2>/dev/null | awk '{sum += $1} END {print sum+0}')
-                   HIGH_VULNS=$(jq -r '.site[].alerts[] | select(.riskcode == "3") | .name' report_json.json 2>/dev/null | wc -l)
-                   MEDIUM_VULNS=$(jq -r '.site[].alerts[] | select(.riskcode == "2") | .name' report_json.json 2>/dev/null | wc -l)
-                   LOW_VULNS=$(jq -r '.site[].alerts[] | select(.riskcode == "1") | .name' report_json.json 2>/dev/null | wc -l)
-                   INFO_VULNS=$(jq -r '.site[].alerts[] | select(.riskcode == "0") | .name' report_json.json 2>/dev/null | wc -l)
-                   
-                   echo "| Severity | Count |" >> $GITHUB_STEP_SUMMARY
-                   echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
-                   echo "| 🔴 High | $HIGH_VULNS |" >> $GITHUB_STEP_SUMMARY
-                   echo "| 🟡 Medium | $MEDIUM_VULNS |" >> $GITHUB_STEP_SUMMARY
-                   echo "| 🟢 Low | $LOW_VULNS |" >> $GITHUB_STEP_SUMMARY
-                   echo "| 🔵 Informational | $INFO_VULNS |" >> $GITHUB_STEP_SUMMARY
-                   echo "| **Total** | **$TOTAL_ALERTS** |" >> $GITHUB_STEP_SUMMARY
-                   echo "" >> $GITHUB_STEP_SUMMARY
-                   
-                   # Show High severity vulnerabilities first
-                   if [ "$HIGH_VULNS" -gt 0 ]; then
-                     echo "### 🚨 High Severity Vulnerabilities" >> $GITHUB_STEP_SUMMARY
-                     echo "" >> $GITHUB_STEP_SUMMARY
-                     jq -r '.site[].alerts[] | select(.riskcode == "3") | "- **\(.name)** (Plugin ID: \(.pluginid)) - \(.riskdesc)"' report_json.json >> $GITHUB_STEP_SUMMARY
-                     echo "" >> $GITHUB_STEP_SUMMARY
-                   fi
-                   
-                   # Show Medium severity vulnerabilities
-                   if [ "$MEDIUM_VULNS" -gt 0 ]; then
-                     echo "### ⚠️ Medium Severity Vulnerabilities" >> $GITHUB_STEP_SUMMARY
-                     echo "" >> $GITHUB_STEP_SUMMARY
-                     jq -r '.site[].alerts[] | select(.riskcode == "2") | "- **\(.name)** (Plugin ID: \(.pluginid)) - \(.riskdesc)"' report_json.json >> $GITHUB_STEP_SUMMARY
-                     echo "" >> $GITHUB_STEP_SUMMARY
-                   fi
-                   
-                   # Show detailed vulnerability table
-                   echo "### 📋 Detailed Vulnerability Report" >> $GITHUB_STEP_SUMMARY
-                   echo "" >> $GITHUB_STEP_SUMMARY
-                   echo "| Severity | Vulnerability | Plugin ID | Instances | Description |" >> $GITHUB_STEP_SUMMARY
-                   echo "|----------|---------------|-----------|-----------|-------------|" >> $GITHUB_STEP_SUMMARY
-                   
-                   # Extract vulnerabilities with severity mapping
-                   jq -r '.site[].alerts[] | 
-                     if .riskcode == "3" then "🔴 HIGH"
-                     elif .riskcode == "2" then "🟡 MEDIUM" 
-                     elif .riskcode == "1" then "🟢 LOW"
-                     else "🔵 INFO"
-                     end + " | " + .name + " | " + .pluginid + " | " + .count + " | " + (.desc | gsub("\n"; " ") | gsub("<[^>]*>"; "") | .[0:100] + "...")' report_json.json >> $GITHUB_STEP_SUMMARY
-                   
-                   echo "" >> $GITHUB_STEP_SUMMARY
-                   
-                   # Show specific high-risk findings
-                   echo "### 🎯 Key Findings" >> $GITHUB_STEP_SUMMARY
-                   echo "" >> $GITHUB_STEP_SUMMARY
-                   
-                   # SQL Injection findings
-                   SQL_COUNT=$(jq -r '.site[].alerts[] | select(.name | contains("SQL Injection")) | .count' report_json.json 2>/dev/null | head -1)
-                   if [ ! -z "$SQL_COUNT" ] && [ "$SQL_COUNT" != "null" ]; then
-                     echo "**🔴 SQL Injection**: $SQL_COUNT instances found" >> $GITHUB_STEP_SUMMARY
-                   fi
-                   
-                   # XSS findings
-                   XSS_COUNT=$(jq -r '.site[].alerts[] | select(.name | contains("Cross Site Scripting")) | .count' report_json.json 2>/dev/null | awk '{sum += $1} END {print sum+0}')
-                   if [ "$XSS_COUNT" -gt 0 ]; then
-                     echo "**🔴 Cross-Site Scripting (XSS)**: $XSS_COUNT instances found" >> $GITHUB_STEP_SUMMARY
-                   fi
-                   
-                   # Command Injection findings
-                   CMD_COUNT=$(jq -r '.site[].alerts[] | select(.name | contains("Command Injection")) | .count' report_json.json 2>/dev/null | awk '{sum += $1} END {print sum+0}')
-                   if [ "$CMD_COUNT" -gt 0 ]; then
-                     echo "**🔴 Command Injection**: $CMD_COUNT instances found" >> $GITHUB_STEP_SUMMARY
-                   fi
-                   
-                   # Path Traversal findings
-                   PATH_COUNT=$(jq -r '.site[].alerts[] | select(.name | contains("Path Traversal")) | .count' report_json.json 2>/dev/null | head -1)
-                   if [ ! -z "$PATH_COUNT" ] && [ "$PATH_COUNT" != "null" ]; then
-                     echo "**🔴 Path Traversal**: $PATH_COUNT instances found" >> $GITHUB_STEP_SUMMARY
-                   fi
-                   
-                   # CSRF findings
-                   CSRF_COUNT=$(jq -r '.site[].alerts[] | select(.name | contains("CSRF")) | .count' report_json.json 2>/dev/null | awk '{sum += $1} END {print sum+0}')
-                   if [ "$CSRF_COUNT" -gt 0 ]; then
-                     echo "**🟡 CSRF**: $CSRF_COUNT instances found" >> $GITHUB_STEP_SUMMARY
-                   fi
-                   
-                   echo "" >> $GITHUB_STEP_SUMMARY
-                   
-                 elif [ -f "report_md.md" ]; then
-                   echo "### 📄 ZAP Markdown Report Available" >> $GITHUB_STEP_SUMMARY
-                   echo "" >> $GITHUB_STEP_SUMMARY
-                   echo "**Markdown Report Preview:**" >> $GITHUB_STEP_SUMMARY
-                   head -50 report_md.md >> $GITHUB_STEP_SUMMARY
-                   
-                 else
-                   echo "### ❌ No ZAP scan reports found" >> $GITHUB_STEP_SUMMARY
-                   echo "" >> $GITHUB_STEP_SUMMARY
-                   echo "The ZAP full scan may have failed or no reports were generated." >> $GITHUB_STEP_SUMMARY
-                   echo "Check the workflow logs for more details." >> $GITHUB_STEP_SUMMARY
-                 fi
-                 
-                 echo "" >> $GITHUB_STEP_SUMMARY
-                 echo "---" >> $GITHUB_STEP_SUMMARY
-                 echo "📅 ZAP DAST scan completed at: $(date)" >> $GITHUB_STEP_SUMMARY
-                 echo "🎯 Target: http://localhost:8080" >> $GITHUB_STEP_SUMMARY
-                 echo "🛡️ Scanner: OWASP ZAP Full Scan" >> $GITHUB_STEP_SUMMARY
+          # Check if ZAP scan reports exist
+          if [ -f "report_json.json" ]; then
+            echo "### 📊 ZAP Scan Summary" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Extract vulnerability counts by severity
+            TOTAL_ALERTS=$(jq -r '.site[].alerts | length' report_json.json 2>/dev/null | awk '{sum += $1} END {print sum+0}')
+            HIGH_VULNS=$(jq -r '.site[].alerts[] | select(.riskcode == "3") | .name' report_json.json 2>/dev/null | wc -l)
+            MEDIUM_VULNS=$(jq -r '.site[].alerts[] | select(.riskcode == "2") | .name' report_json.json 2>/dev/null | wc -l)
+            LOW_VULNS=$(jq -r '.site[].alerts[] | select(.riskcode == "1") | .name' report_json.json 2>/dev/null | wc -l)
+            INFO_VULNS=$(jq -r '.site[].alerts[] | select(.riskcode == "0") | .name' report_json.json 2>/dev/null | wc -l)
+            
+            echo "| Severity | Count |" >> $GITHUB_STEP_SUMMARY
+            echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| 🔴 High | $HIGH_VULNS |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🟡 Medium | $MEDIUM_VULNS |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🟢 Low | $LOW_VULNS |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🔵 Informational | $INFO_VULNS |" >> $GITHUB_STEP_SUMMARY
+            echo "| **Total** | **$TOTAL_ALERTS** |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Show High severity vulnerabilities first
+            if [ "$HIGH_VULNS" -gt 0 ]; then
+              echo "### 🚨 High Severity Vulnerabilities" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              jq -r '.site[].alerts[] | select(.riskcode == "3") | "- **\(.name)** (Plugin ID: \(.pluginid)) - \(.riskdesc)"' report_json.json >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            # Show Medium severity vulnerabilities
+            if [ "$MEDIUM_VULNS" -gt 0 ]; then
+              echo "### ⚠️ Medium Severity Vulnerabilities" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              jq -r '.site[].alerts[] | select(.riskcode == "2") | "- **\(.name)** (Plugin ID: \(.pluginid)) - \(.riskdesc)"' report_json.json >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            # Show detailed vulnerability table
+            echo "### 📋 Detailed Vulnerability Report" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Severity | Vulnerability | Plugin ID | Instances | Description |" >> $GITHUB_STEP_SUMMARY
+            echo "|----------|---------------|-----------|-----------|-------------|" >> $GITHUB_STEP_SUMMARY
+            
+            # Extract vulnerabilities with severity mapping
+            jq -r '.site[].alerts[] | 
+              if .riskcode == "3" then "🔴 HIGH"
+              elif .riskcode == "2" then "🟡 MEDIUM" 
+              elif .riskcode == "1" then "🟢 LOW"
+              else "🔵 INFO"
+              end + " | " + .name + " | " + .pluginid + " | " + .count + " | " + (.desc | gsub("\n"; " ") | gsub("<[^>]*>"; "") | .[0:100] + "...")' report_json.json >> $GITHUB_STEP_SUMMARY
+            
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Show specific high-risk findings
+            echo "### 🎯 Key Findings" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # SQL Injection findings
+            SQL_COUNT=$(jq -r '.site[].alerts[] | select(.name | contains("SQL Injection")) | .count' report_json.json 2>/dev/null | head -1)
+            if [ ! -z "$SQL_COUNT" ] && [ "$SQL_COUNT" != "null" ]; then
+              echo "**🔴 SQL Injection**: $SQL_COUNT instances found" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            # XSS findings
+            XSS_COUNT=$(jq -r '.site[].alerts[] | select(.name | contains("Cross Site Scripting")) | .count' report_json.json 2>/dev/null | awk '{sum += $1} END {print sum+0}')
+            if [ "$XSS_COUNT" -gt 0 ]; then
+              echo "**🔴 Cross-Site Scripting (XSS)**: $XSS_COUNT instances found" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            # Command Injection findings
+            CMD_COUNT=$(jq -r '.site[].alerts[] | select(.name | contains("Command Injection")) | .count' report_json.json 2>/dev/null | awk '{sum += $1} END {print sum+0}')
+            if [ "$CMD_COUNT" -gt 0 ]; then
+              echo "**🔴 Command Injection**: $CMD_COUNT instances found" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            # Path Traversal findings
+            PATH_COUNT=$(jq -r '.site[].alerts[] | select(.name | contains("Path Traversal")) | .count' report_json.json 2>/dev/null | head -1)
+            if [ ! -z "$PATH_COUNT" ] && [ "$PATH_COUNT" != "null" ]; then
+              echo "**🔴 Path Traversal**: $PATH_COUNT instances found" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            # CSRF findings
+            CSRF_COUNT=$(jq -r '.site[].alerts[] | select(.name | contains("CSRF")) | .count' report_json.json 2>/dev/null | awk '{sum += $1} END {print sum+0}')
+            if [ "$CSRF_COUNT" -gt 0 ]; then
+              echo "**🟡 CSRF**: $CSRF_COUNT instances found" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+          elif [ -f "report_md.md" ]; then
+            echo "### 📄 ZAP Markdown Report Available" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Markdown Report Preview:**" >> $GITHUB_STEP_SUMMARY
+            head -50 report_md.md >> $GITHUB_STEP_SUMMARY
+            
+          else
+            echo "### ❌ No ZAP scan reports found" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "The ZAP full scan may have failed or no reports were generated." >> $GITHUB_STEP_SUMMARY
+            echo "Check the workflow logs for more details." >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "📅 ZAP DAST scan completed at: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "🎯 Target: http://localhost:8080" >> $GITHUB_STEP_SUMMARY
+          echo "🛡️ Scanner: OWASP ZAP Full Scan" >> $GITHUB_STEP_SUMMARY
