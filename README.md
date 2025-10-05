@@ -39,3 +39,4 @@ to next java run.*
 
 ### Snyk UI
 ![Snyk UI Reachable Vulnerabilities](UI_reachable.png)
+# Test Snyk with proper token
