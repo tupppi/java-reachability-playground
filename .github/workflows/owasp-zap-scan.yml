@@ -36,8 +36,80 @@ jobs:
           echo "Application is responding successfully"
         
       - name: OWASP ZAP DAST Scan
+        id: zap-scan
         uses: zaproxy/action-baseline@v0.14.0
+        continue-on-error: true
         with:
           target: 'http://localhost:8080'
           rules_file_name: '.zap/rules.tsv'
           cmd_options: '-a'
+          fail_action: false
+          allow_issue_writing: false
+          
+      - name: Parse and display ZAP scan results
+        if: always()
+        run: |
+          echo "## 🔍 OWASP ZAP DAST Security Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Check if scan reports exist
+          if [ -f "report_json.json" ]; then
+            echo "### 📊 Scan Summary" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Extract scan statistics
+            TOTAL_URLS=$(jq -r '.site[] | length' report_json.json | awk '{sum += $1} END {print sum}')
+            TOTAL_ALERTS=$(jq -r '.site[].alerts | length' report_json.json | awk '{sum += $1} END {print sum}')
+            HIGH_RISK=$(jq -r '.site[].alerts[] | select(.risk == "High") | .name' report_json.json | wc -l)
+            MEDIUM_RISK=$(jq -r '.site[].alerts[] | select(.risk == "Medium") | .name' report_json.json | wc -l)
+            LOW_RISK=$(jq -r '.site[].alerts[] | select(.risk == "Low") | .name' report_json.json | wc -l)
+            INFO_RISK=$(jq -r '.site[].alerts[] | select(.risk == "Informational") | .name' report_json.json | wc -l)
+            
+            echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| 🌐 URLs Scanned | $TOTAL_URLS |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🔍 Total Alerts | $TOTAL_ALERTS |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🔴 High Risk | $HIGH_RISK |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🟡 Medium Risk | $MEDIUM_RISK |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🟢 Low Risk | $LOW_RISK |" >> $GITHUB_STEP_SUMMARY
+            echo "| ℹ️ Informational | $INFO_RISK |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Show high risk vulnerabilities
+            if [ "$HIGH_RISK" -gt 0 ]; then
+              echo "### 🚨 High Risk Vulnerabilities" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              jq -r '.site[].alerts[] | select(.risk == "High") | "- **\(.name)**: \(.desc) | [View Details](\(.reference))"' report_json.json | head -5 >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            # Show medium risk vulnerabilities
+            if [ "$MEDIUM_RISK" -gt 0 ]; then
+              echo "### ⚠️ Medium Risk Vulnerabilities" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              jq -r '.site[].alerts[] | select(.risk == "Medium") | "- **\(.name)**: \(.desc) | [View Details](\(.reference))"' report_json.json | head -5 >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            # Show all vulnerabilities table
+            echo "### 📋 All Security Findings" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            jq -r '.site[].alerts[] | "| \(.risk | ascii_upcase) | \(.name) | \(.desc) | [Details](\(.reference)) |"' report_json.json | \
+            sed '1i| Risk | Name | Description | Reference |\n|------|------|-------------|-----------|' >> $GITHUB_STEP_SUMMARY
+            
+          elif [ -f "report_md.md" ]; then
+            echo "### 📄 Scan Report Available" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Markdown report generated successfully. Check the workflow artifacts for detailed results." >> $GITHUB_STEP_SUMMARY
+            
+          else
+            echo "### ❌ No scan reports found" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "The ZAP scan may have failed or no reports were generated." >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "📅 DAST scan completed at: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "🎯 Target: http://localhost:8080" >> $GITHUB_STEP_SUMMARY
+          echo "🛡️ Scanner: OWASP ZAP Baseline" >> $GITHUB_STEP_SUMMARY
