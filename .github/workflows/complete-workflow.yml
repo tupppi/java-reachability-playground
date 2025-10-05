@@ -275,79 +275,90 @@ jobs:
           echo "| **Scan Type** | Active vulnerability scanning |" >> $GITHUB_STEP_SUMMARY
           echo "</details>" >> $GITHUB_STEP_SUMMARY
 
-  # ==================== IaC Security (TFSec Only) ====================
+  # ==================== IaC Security (Checkov) ====================
   iac-security:
     needs: build-and-test
     runs-on: ubuntu-latest
-    name: IaC Security - TFSec
+    name: IaC Security - Checkov
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         
-      - name: Run TFSec Terraform Security Scan
-        id: tfsec-scan
-        uses: aquasecurity/tfsec-action@v1.0.3
+      - name: Run Checkov IaC Security Scan
+        id: checkov-scan
+        uses: bridgecrewio/checkov-action@master
         continue-on-error: true
         with:
-          working_directory: .
-          format: json
-          soft_fail: true
+          directory: .
+          framework: terraform,kubernetes,dockerfile,cloudformation
+          output_format: json
+          output_file_path: checkov-results.json
+          quiet: true
           
-      - name: Parse and display TFSec results
+      - name: Parse and display Checkov results
         if: always()
         run: |
           echo "## 🏗️ IaC Security Scan Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           echo "<details>" >> $GITHUB_STEP_SUMMARY
-          echo "<summary><strong>📊 TFSec Scan Summary</strong></summary>" >> $GITHUB_STEP_SUMMARY
+          echo "<summary><strong>📊 Checkov Scan Summary</strong></summary>" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          if [ -f results.json ]; then
-            echo "### 🎯 TFSec Scan Results" >> $GITHUB_STEP_SUMMARY
+          if [ -f checkov-results.json ]; then
+            echo "### 🎯 Checkov Scan Results" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             
-            TOTAL_ISSUES=$(jq -r '.results | length' results.json 2>/dev/null || echo "0")
-            HIGH_ISSUES=$(jq -r '[.results[] | select(.severity == "HIGH" or .severity == "CRITICAL")] | length' results.json 2>/dev/null || echo "0")
-            MEDIUM_ISSUES=$(jq -r '[.results[] | select(.severity == "MEDIUM")] | length' results.json 2>/dev/null || echo "0")
-            LOW_ISSUES=$(jq -r '[.results[] | select(.severity == "LOW")] | length' results.json 2>/dev/null || echo "0")
+            # Parse Checkov results
+            TOTAL_FAILED=$(jq -r '.summary.failed_checks' checkov-results.json 2>/dev/null || echo "0")
+            TOTAL_PASSED=$(jq -r '.summary.passed_checks' checkov-results.json 2>/dev/null || echo "0")
+            
+            # Count by severity
+            HIGH_ISSUES=$(jq -r '[.results.failed_checks[] | select(.check_severity == "HIGH")] | length' checkov-results.json 2>/dev/null || echo "0")
+            MEDIUM_ISSUES=$(jq -r '[.results.failed_checks[] | select(.check_severity == "MEDIUM")] | length' checkov-results.json 2>/dev/null || echo "0")
+            LOW_ISSUES=$(jq -r '[.results.failed_checks[] | select(.check_severity == "LOW")] | length' checkov-results.json 2>/dev/null || echo "0")
             
             echo "| Severity | Count |" >> $GITHUB_STEP_SUMMARY
             echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
-            echo "| 🔴 High/Critical | $HIGH_ISSUES |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🔴 High | $HIGH_ISSUES |" >> $GITHUB_STEP_SUMMARY
             echo "| 🟡 Medium | $MEDIUM_ISSUES |" >> $GITHUB_STEP_SUMMARY
             echo "| 🟢 Low | $LOW_ISSUES |" >> $GITHUB_STEP_SUMMARY
-            echo "| **Total** | **$TOTAL_ISSUES** |" >> $GITHUB_STEP_SUMMARY
+            echo "| **Total Failed** | **$TOTAL_FAILED** |" >> $GITHUB_STEP_SUMMARY
+            echo "| **Total Passed** | **$TOTAL_PASSED** |" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             
             if [ "$HIGH_ISSUES" -gt 0 ]; then
-              echo "### 🚨 High/Critical Severity IaC Issues:" >> $GITHUB_STEP_SUMMARY
+              echo "### 🚨 High Severity IaC Issues:" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
-              jq -r '.results[] | select(.severity == "HIGH" or .severity == "CRITICAL") | "- **\(.rule_id)**: \(.description) in \(.location.filename)"' results.json | head -10 >> $GITHUB_STEP_SUMMARY
+              jq -r '.results.failed_checks[] | select(.check_severity == "HIGH") | "- **\(.check_id)**: \(.check_name) in \(.file_path):\(.file_line_range[0])"' checkov-results.json | head -10 >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
             fi
             
-            if [ "$TOTAL_ISSUES" -eq 0 ]; then
+            if [ "$MEDIUM_ISSUES" -gt 0 ]; then
+              echo "### ⚠️ Medium Severity IaC Issues:" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              jq -r '.results.failed_checks[] | select(.check_severity == "MEDIUM") | "- **\(.check_id)**: \(.check_name) in \(.file_path):\(.file_line_range[0])"' checkov-results.json | head -5 >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            if [ "$TOTAL_FAILED" -eq 0 ]; then
               echo "### ✅ No Security Issues Found" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
-              echo "All Terraform security checks passed successfully!" >> $GITHUB_STEP_SUMMARY
+              echo "All Checkov IaC security checks passed successfully!" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
             fi
           else
-            echo "### ℹ️ No Terraform Files Found" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "No `.tf` files detected in the repository. TFSec scan skipped." >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Note**: This scan only runs when Terraform files are present." >> $GITHUB_STEP_SUMMARY
+            echo "### ❌ No Checkov results file found" >> $GITHUB_STEP_SUMMARY
+            echo "The Checkov scan may have failed or no results were generated." >> $GITHUB_STEP_SUMMARY
           fi
           
           echo "### 📋 Analysis Details:" >> $GITHUB_STEP_SUMMARY
           echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
           echo "| **Analysis Type** | Infrastructure as Code Security |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Scanner** | TFSec |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Target** | Terraform configurations |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Focus** | AWS security misconfigurations |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Scanner** | Checkov |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Target** | Terraform, Kubernetes, Dockerfile, CloudFormation |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Focus** | AWS, Azure, GCP, Kubernetes misconfigurations |" >> $GITHUB_STEP_SUMMARY
           echo "| **Status** | Scan completed successfully" >> $GITHUB_STEP_SUMMARY
           echo "</details>" >> $GITHUB_STEP_SUMMARY
 
@@ -536,7 +547,7 @@ jobs:
           echo "| 🔍 **SAST** | Snyk Code | ✅ Success |" >> $GITHUB_STEP_SUMMARY
           echo "| 🔒 **SCA** | Snyk | ✅ Success |" >> $GITHUB_STEP_SUMMARY
           echo "| 🌐 **DAST** | OWASP ZAP | ✅ Success |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🏗️ **IaC Security** | TFSec | ✅ Success |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🏗️ **IaC Security** | Checkov | ✅ Success |" >> $GITHUB_STEP_SUMMARY
           echo "| 🐳 **Container Security** | Trivy | ✅ Success |" >> $GITHUB_STEP_SUMMARY
           echo "| 🔐 **Secrets Scanning** | Custom Grep | ✅ Success |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -549,7 +560,7 @@ jobs:
           echo "- 🔍 **SAST**: Multi-language security analysis with Snyk Code" >> $GITHUB_STEP_SUMMARY
           echo "- 🔒 **SCA**: Dependency vulnerability scanning with Snyk" >> $GITHUB_STEP_SUMMARY
           echo "- 🌐 **DAST**: Dynamic application testing with OWASP ZAP" >> $GITHUB_STEP_SUMMARY
-          echo "- 🏗️ **IaC**: Terraform security with TFSec (simplified)" >> $GITHUB_STEP_SUMMARY
+          echo "- 🏗️ **IaC**: Infrastructure security with Checkov (Terraform, K8s, Docker)" >> $GITHUB_STEP_SUMMARY
           echo "- 🐳 **Container**: Container vulnerability scanning with Trivy" >> $GITHUB_STEP_SUMMARY
           echo "- 🔐 **Secrets**: Pattern-based secrets detection with custom grep" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -557,7 +568,7 @@ jobs:
           echo "### 🔧 Key Improvements:" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ **SAST**: Using Snyk Code for comprehensive multi-language analysis" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ **IaC**: Simplified to TFSec only for Terraform files" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ **IaC**: Using Checkov for comprehensive IaC security (Terraform, K8s, Docker)" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ **Secrets**: Custom grep-based scanning that actually works" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ **Reliability**: All tools tested locally and confirmed working" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
