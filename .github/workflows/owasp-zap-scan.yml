@@ -22,10 +22,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
         
-      - name: Start vulnerable Python application
+      - name: Initialize database and start vulnerable Python application
         run: |
+          python -c "
+          import sqlite3
+          conn = sqlite3.connect('users.db')
+          cursor = conn.cursor()
+          cursor.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT, password TEXT)')
+          cursor.execute('INSERT OR IGNORE INTO users (username, password) VALUES (\"admin\", \"admin123\")')
+          cursor.execute('INSERT OR IGNORE INTO users (username, password) VALUES (\"user\", \"password\")')
+          conn.commit()
+          conn.close()
+          print('Database initialized')
+          "
           python vulnerable-app.py &
-          echo "Vulnerable Flask application started in background"
+          echo "Super vulnerable Flask application started in background"
           
       - name: Wait for application to start
         run: sleep 10
@@ -41,7 +52,6 @@ jobs:
         continue-on-error: true
         with:
           target: 'http://localhost:8080'
-          rules_file_name: '.zap/rules.tsv'
           cmd_options: '-a'
           fail_action: false
           allow_issue_writing: false
