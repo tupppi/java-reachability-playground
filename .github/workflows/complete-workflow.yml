@@ -606,15 +606,15 @@ jobs:
         with:
           fetch-depth: 0  # Required for TruffleHog
           
-             - name: Run TruffleHog secrets scan
-               id: trufflehog-scan
-               uses: trufflesecurity/trufflehog@main
-               continue-on-error: true
-               with:
-                 path: ./
-                 base: main
-                 head: HEAD
-                 extra_args: --json --output secrets-results.json
+      - name: Run TruffleHog secrets scan
+        id: trufflehog-scan
+        uses: trufflesecurity/trufflehog@main
+        continue-on-error: true
+        with:
+          path: ./
+          base: main
+          head: HEAD
+          extra_args: --json --output secrets-results.json
           
       - name: Parse and display secrets results
         if: always()
