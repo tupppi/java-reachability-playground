@@ -15,27 +15,13 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'zulu'
-    - name: Install SonarQube Scanner
-      run: |
-        wget -O sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
-        unzip sonar-scanner.zip
-        sudo mv sonar-scanner-4.8.0.2856-linux /opt/sonar-scanner
-        echo "/opt/sonar-scanner/bin" >> $GITHUB_PATH
     - name: Run SonarQube analysis
-      run: |
-        sonar-scanner \
-          -Dsonar.projectKey=python-vulnerable-app \
-          -Dsonar.projectName="Python Vulnerable App" \
-          -Dsonar.organization=tupppi \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.token=$SONAR_TOKEN \
-          -Dsonar.sources=. \
-          -Dsonar.python.version=3.9
+      uses: SonarSource/sonarcloud-github-action@master
       env:
         GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      with:
+        projectKey: python-vulnerable-app
+        projectName: "Python Vulnerable App"
+        organization: tupppi
+        sources: .
