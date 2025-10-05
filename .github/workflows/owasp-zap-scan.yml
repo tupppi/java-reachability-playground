@@ -46,70 +46,16 @@ jobs:
           curl -f http://localhost:8080/ || exit 1
           echo "Application is responding successfully"
         
-      - name: Manual ZAP DAST Scan
+      - name: OWASP ZAP Full DAST Scan
         id: zap-scan
-        run: |
-          # Download and run ZAP manually for better control
-          echo "🔍 Starting Manual ZAP DAST Scan..."
-          
-          # Install ZAP
-          wget -q https://github.com/zaproxy/zaproxy/releases/download/v2.14.0/ZAP_2.14.0_Linux.tar.gz
-          tar -xzf ZAP_2.14.0_Linux.tar.gz
-          chmod +x ZAP_2.14.0/zap.sh
-          
-          # Start ZAP in daemon mode and run scan
-          ./ZAP_2.14.0/zap.sh -daemon -port 8090 -config api.disablekey=true &
-          sleep 10
-          
-          # Run spider scan
-          echo "🕷️ Running spider scan..."
-          curl "http://localhost:8090/JSON/spider/action/scan/?url=http://localhost:8080"
-          
-          # Wait for spider to complete
-          while true; do
-            STATUS=$(curl -s "http://localhost:8090/JSON/spider/view/status/")
-            if [[ "$STATUS" == *"100"* ]]; then
-              echo "✅ Spider scan completed"
-              break
-            fi
-            echo "⏳ Spider progress: $STATUS"
-            sleep 5
-          done
-          
-          # Run active scan
-          echo "🎯 Running active scan..."
-          curl "http://localhost:8090/JSON/ascan/action/scan/?url=http://localhost:8080"
-          
-          # Wait for active scan to complete
-          while true; do
-            STATUS=$(curl -s "http://localhost:8090/JSON/ascan/view/status/")
-            if [[ "$STATUS" == *"100"* ]]; then
-              echo "✅ Active scan completed"
-              break
-            fi
-            echo "⏳ Active scan progress: $STATUS"
-            sleep 10
-          done
-          
-          # Get scan results
-          echo "📊 Collecting scan results..."
-          curl -s "http://localhost:8090/JSON/core/view/alerts/" > zap_results.json
-          
-          # Generate summary
-          echo "📋 Scan Summary:"
-          HIGH_COUNT=$(cat zap_results.json | jq '.alerts[] | select(.risk == "High") | .name' | wc -l)
-          MEDIUM_COUNT=$(cat zap_results.json | jq '.alerts[] | select(.risk == "Medium") | .name' | wc -l)
-          LOW_COUNT=$(cat zap_results.json | jq '.alerts[] | select(.risk == "Low") | .name' | wc -l)
-          INFO_COUNT=$(cat zap_results.json | jq '.alerts[] | select(.risk == "Informational") | .name' | wc -l)
-          
-          echo "🔴 High Risk: $HIGH_COUNT"
-          echo "🟡 Medium Risk: $MEDIUM_COUNT" 
-          echo "🟢 Low Risk: $LOW_COUNT"
-          echo "ℹ️ Informational: $INFO_COUNT"
-          
-          # Stop ZAP
-          curl "http://localhost:8090/JSON/core/action/shutdown/"
+        uses: zaproxy/action-full-scan@v0.4.0
         continue-on-error: true
+        with:
+          target: 'http://localhost:8080'
+          cmd_options: '-a'
+          fail_action: false
+          allow_issue_writing: false
+          docker_name: 'ghcr.io/zaproxy/zaproxy:stable'
           
       - name: Parse and display ZAP scan results
         if: always()
@@ -117,20 +63,22 @@ jobs:
           echo "## 🔍 OWASP ZAP DAST Security Scan Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          # Check if scan results exist
-          if [ -f "zap_results.json" ]; then
-            echo "### 📊 Scan Summary" >> $GITHUB_STEP_SUMMARY
+          # Check if ZAP scan reports exist
+          if [ -f "report_json.json" ]; then
+            echo "### 📊 ZAP Scan Summary" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             
-            # Extract scan statistics
-            TOTAL_ALERTS=$(jq '.alerts | length' zap_results.json)
-            HIGH_RISK=$(jq '.alerts[] | select(.risk == "High") | .name' zap_results.json | wc -l)
-            MEDIUM_RISK=$(jq '.alerts[] | select(.risk == "Medium") | .name' zap_results.json | wc -l)
-            LOW_RISK=$(jq '.alerts[] | select(.risk == "Low") | .name' zap_results.json | wc -l)
-            INFO_RISK=$(jq '.alerts[] | select(.risk == "Informational") | .name' zap_results.json | wc -l)
+            # Extract scan statistics from ZAP JSON report
+            TOTAL_URLS=$(jq -r '.site[] | length' report_json.json | awk '{sum += $1} END {print sum}')
+            TOTAL_ALERTS=$(jq -r '.site[].alerts | length' report_json.json | awk '{sum += $1} END {print sum}')
+            HIGH_RISK=$(jq -r '.site[].alerts[] | select(.risk == "High") | .name' report_json.json | wc -l)
+            MEDIUM_RISK=$(jq -r '.site[].alerts[] | select(.risk == "Medium") | .name' report_json.json | wc -l)
+            LOW_RISK=$(jq -r '.site[].alerts[] | select(.risk == "Low") | .name' report_json.json | wc -l)
+            INFO_RISK=$(jq -r '.site[].alerts[] | select(.risk == "Informational") | .name' report_json.json | wc -l)
             
             echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
             echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| 🌐 URLs Scanned | $TOTAL_URLS |" >> $GITHUB_STEP_SUMMARY
             echo "| 🔍 Total Alerts | $TOTAL_ALERTS |" >> $GITHUB_STEP_SUMMARY
             echo "| 🔴 High Risk | $HIGH_RISK |" >> $GITHUB_STEP_SUMMARY
             echo "| 🟡 Medium Risk | $MEDIUM_RISK |" >> $GITHUB_STEP_SUMMARY
@@ -142,7 +90,7 @@ jobs:
             if [ "$HIGH_RISK" -gt 0 ]; then
               echo "### 🚨 High Risk Vulnerabilities" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
-              jq -r '.alerts[] | select(.risk == "High") | "- **\(.name)**: \(.description) | Risk: \(.risk) | Confidence: \(.confidence)"' zap_results.json | head -10 >> $GITHUB_STEP_SUMMARY
+              jq -r '.site[].alerts[] | select(.risk == "High") | "- **\(.name)**: \(.desc) | URL: \(.url) | Confidence: \(.confidence)"' report_json.json | head -10 >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
             fi
             
@@ -150,25 +98,30 @@ jobs:
             if [ "$MEDIUM_RISK" -gt 0 ]; then
               echo "### ⚠️ Medium Risk Vulnerabilities" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
-              jq -r '.alerts[] | select(.risk == "Medium") | "- **\(.name)**: \(.description) | Risk: \(.risk) | Confidence: \(.confidence)"' zap_results.json | head -10 >> $GITHUB_STEP_SUMMARY
+              jq -r '.site[].alerts[] | select(.risk == "Medium") | "- **\(.name)**: \(.desc) | URL: \(.url) | Confidence: \(.confidence)"' report_json.json | head -10 >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
             fi
             
             # Show all vulnerabilities table
             echo "### 📋 All Security Findings" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            jq -r '.alerts[] | "| \(.risk | ascii_upcase) | \(.name) | \(.description) | \(.confidence) |"' zap_results.json | \
-            sed '1i| Risk | Name | Description | Confidence |\n|------|------|-------------|------------|' >> $GITHUB_STEP_SUMMARY
+            jq -r '.site[].alerts[] | "| \(.risk | ascii_upcase) | \(.name) | \(.desc) | \(.url) |"' report_json.json | \
+            sed '1i| Risk | Name | Description | URL |\n|------|------|-------------|-----|' >> $GITHUB_STEP_SUMMARY
+            
+          elif [ -f "report_md.md" ]; then
+            echo "### 📄 ZAP Scan Report Available" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Markdown report generated successfully. Check the workflow artifacts for detailed results." >> $GITHUB_STEP_SUMMARY
             
           else
-            echo "### ❌ No scan results found" >> $GITHUB_STEP_SUMMARY
+            echo "### ❌ No ZAP scan reports found" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "The ZAP scan may have failed or no results were generated." >> $GITHUB_STEP_SUMMARY
+            echo "The ZAP full scan may have failed or no reports were generated." >> $GITHUB_STEP_SUMMARY
             echo "Check the workflow logs for more details." >> $GITHUB_STEP_SUMMARY
           fi
           
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
-          echo "📅 DAST scan completed at: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "📅 ZAP DAST scan completed at: $(date)" >> $GITHUB_STEP_SUMMARY
           echo "🎯 Target: http://localhost:8080" >> $GITHUB_STEP_SUMMARY
-          echo "🛡️ Scanner: OWASP ZAP Manual Scan" >> $GITHUB_STEP_SUMMARY
+          echo "🛡️ Scanner: OWASP ZAP Full Scan" >> $GITHUB_STEP_SUMMARY
