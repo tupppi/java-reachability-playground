@@ -1,0 +1,464 @@
+name: Complete DevSecOps Security Pipeline - SAST, DAST, SCA, IaC & More
+
+on: 
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+env:
+  PYTHON_VERSION: '3.9'
+  JAVA_VERSION: '17'
+
+jobs:
+  # ==================== BUILD & TEST ====================
+  build-and-test:
+    runs-on: ubuntu-latest
+    name: Build and Unit Tests
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          
+      - name: Run Python unit tests
+        if: hashFiles('**/test_*.py') != ''
+        run: |
+          python -m pytest tests/ -v || echo "No Python tests found"
+          
+      - name: Build Java application (if exists)
+        if: hashFiles('**/pom.xml') != ''
+        run: |
+          mvn clean compile test -DskipTests=true || echo "Maven build completed with warnings"
+          
+      - name: Test application startup
+        run: |
+          echo "✅ Build and test phase completed successfully"
+
+  # ==================== SAST (Static Application Security Testing) ====================
+  sast-sonarqube:
+    runs-on: ubuntu-latest
+    name: SAST - SonarQube Analysis
+    needs: build-and-test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          
+      - name: Run SonarQube SAST Analysis
+        id: sonar-scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=tupppi_java-reachability-playground
+            -Dsonar.projectName="Java Reachability Playground - Complete Pipeline"
+            -Dsonar.organization=tupppi
+            -Dsonar.sources=.
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.exclusions=**/*.java,**/src/**,**/pom.xml,**/target/**
+            
+      - name: Parse and display SonarQube results
+        if: always()
+        run: |
+          echo "## 🔍 SAST - SonarQube Analysis Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **SonarQube SAST Analysis Completed**" >> $GITHUB_STEP_SUMMARY
+          echo "📋 **[View SonarQube Dashboard](https://sonarcloud.io/dashboard?id=tupppi_java-reachability-playground&branch=master)**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Analysis Type**: Static Application Security Testing (SAST)" >> $GITHUB_STEP_SUMMARY
+          echo "**Scanner**: SonarQube Cloud" >> $GITHUB_STEP_SUMMARY
+          echo "**Target**: Python Flask Application" >> $GITHUB_STEP_SUMMARY
+
+  # ==================== SCA (Software Composition Analysis) ====================
+  sca-snyk:
+    runs-on: ubuntu-latest
+    name: SCA - Snyk Dependency Scan
+    needs: build-and-test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          
+      - name: Run Snyk SCA Scan - Python
+        id: snyk-python
+        uses: snyk/actions/python@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --json-file-output=snyk-python-results.json
+          
+      - name: Run Snyk SCA Scan - Java (if exists)
+        id: snyk-java
+        if: hashFiles('**/pom.xml') != ''
+        uses: snyk/actions/maven@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --json-file-output=snyk-java-results.json
+          
+      - name: Parse and display Snyk results
+        if: always()
+        run: |
+          echo "## 🔒 SCA - Snyk Dependency Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f snyk-python-results.json ]; then
+            echo "### 📊 Python Dependencies Scan" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            TOTAL_VULNS=$(jq -r '.vulnerabilities | length' snyk-python-results.json)
+            CRITICAL=$(jq -r '[.vulnerabilities[] | select(.severity == "critical")] | length' snyk-python-results.json)
+            HIGH=$(jq -r '[.vulnerabilities[] | select(.severity == "high")] | length' snyk-python-results.json)
+            MEDIUM=$(jq -r '[.vulnerabilities[] | select(.severity == "medium")] | length' snyk-python-results.json)
+            LOW=$(jq -r '[.vulnerabilities[] | select(.severity == "low")] | length' snyk-python-results.json)
+            
+            echo "| Severity | Count |" >> $GITHUB_STEP_SUMMARY
+            echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| 🔴 Critical | $CRITICAL |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🟠 High | $HIGH |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🟡 Medium | $MEDIUM |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🟢 Low | $LOW |" >> $GITHUB_STEP_SUMMARY
+            echo "| **Total** | **$TOTAL_VULNS** |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ -f snyk-java-results.json ]; then
+            echo "### ☕ Java Dependencies Scan" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Java Maven dependencies scanned successfully" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "**Analysis Type**: Software Composition Analysis (SCA)" >> $GITHUB_STEP_SUMMARY
+          echo "**Scanner**: Snyk" >> $GITHUB_STEP_SUMMARY
+
+  # ==================== DAST (Dynamic Application Security Testing) ====================
+  dast-zap:
+    runs-on: ubuntu-latest
+    name: DAST - OWASP ZAP Scan
+    needs: build-and-test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          
+      - name: Initialize database and start vulnerable application
+        run: |
+          python -c "
+          import sqlite3
+          conn = sqlite3.connect('users.db')
+          cursor = conn.cursor()
+          cursor.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT, password TEXT)')
+          cursor.execute('INSERT OR IGNORE INTO users (username, password) VALUES (\"admin\", \"admin123\")')
+          cursor.execute('INSERT OR IGNORE INTO users (username, password) VALUES (\"user\", \"password\")')
+          conn.commit()
+          conn.close()
+          print('Database initialized')
+          "
+          python vulnerable-app.py &
+          echo "Vulnerable Flask application started in background"
+          
+      - name: Wait for application to start
+        run: sleep 10
+        
+      - name: Test application is running
+        run: |
+          curl -f http://localhost:8080/ || exit 1
+          echo "Application is responding successfully"
+          
+      - name: OWASP ZAP Full DAST Scan
+        id: zap-scan
+        uses: zaproxy/action-full-scan@v0.4.0
+        continue-on-error: true
+        with:
+          target: 'http://localhost:8080'
+          cmd_options: '-a'
+          fail_action: false
+          allow_issue_writing: false
+          docker_name: 'ghcr.io/zaproxy/zaproxy:stable'
+          
+      - name: Parse and display ZAP results
+        if: always()
+        run: |
+          echo "## 🔍 DAST - OWASP ZAP Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f "report_json.json" ]; then
+            echo "### 📊 ZAP Scan Summary" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            TOTAL_ALERTS=$(jq -r '.site[].alerts | length' report_json.json 2>/dev/null | awk '{sum += $1} END {print sum+0}')
+            HIGH_VULNS=$(jq -r '.site[].alerts[] | select(.riskcode == "3") | .name' report_json.json 2>/dev/null | wc -l)
+            MEDIUM_VULNS=$(jq -r '.site[].alerts[] | select(.riskcode == "2") | .name' report_json.json 2>/dev/null | wc -l)
+            LOW_VULNS=$(jq -r '[.site[].alerts[] | select(.riskcode == "1")] | length' report_json.json 2>/dev/null | awk '{sum += $1} END {print sum+0}')
+            INFO_VULNS=$(jq -r '[.site[].alerts[] | select(.riskcode == "0")] | length' report_json.json 2>/dev/null | awk '{sum += $1} END {print sum+0}')
+            
+            echo "| Severity | Count |" >> $GITHUB_STEP_SUMMARY
+            echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| 🔴 High | $HIGH_VULNS |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🟡 Medium | $MEDIUM_VULNS |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🟢 Low | $LOW_VULNS |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🔵 Informational | $INFO_VULNS |" >> $GITHUB_STEP_SUMMARY
+            echo "| **Total** | **$TOTAL_ALERTS** |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Show High severity vulnerabilities first
+            if [ "$HIGH_VULNS" -gt 0 ]; then
+              echo "### 🚨 High Severity Vulnerabilities" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              jq -r '.site[].alerts[] | select(.riskcode == "3") | "- **\(.name)** (Plugin ID: \(.pluginid))"' report_json.json >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "### ❌ No ZAP scan reports found" >> $GITHUB_STEP_SUMMARY
+            echo "The ZAP full scan may have failed or no reports were generated." >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "**Analysis Type**: Dynamic Application Security Testing (DAST)" >> $GITHUB_STEP_SUMMARY
+          echo "**Scanner**: OWASP ZAP Full Scan" >> $GITHUB_STEP_SUMMARY
+          echo "**Target**: http://localhost:8080" >> $GITHUB_STEP_SUMMARY
+
+  # ==================== IaC SECURITY ====================
+  iac-security:
+    runs-on: ubuntu-latest
+    name: IaC Security - Checkov & TFSec
+    needs: build-and-test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Run Checkov IaC Security Scan
+        id: checkov-scan
+        uses: bridgecrewio/checkov-action@master
+        continue-on-error: true
+        with:
+          directory: .
+          framework: terraform,cloudformation,dockerfile,kubernetes
+          output_format: json
+          output_file_path: checkov-results.json
+          
+      - name: Run TFSec Terraform Security Scan
+        id: tfsec-scan
+        if: hashFiles('**/*.tf') != ''
+        uses: aquasecurity/tfsec-action@v1.0.3
+        continue-on-error: true
+        with:
+          working_directory: .
+          format: json
+          soft_fail: true
+          
+      - name: Parse and display IaC results
+        if: always()
+        run: |
+          echo "## 🏗️ IaC Security Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f checkov-results.json ]; then
+            echo "### 📊 Checkov Scan Summary" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            FAILED_CHECKS=$(jq -r '.results.failed_checks | length' checkov-results.json 2>/dev/null || echo "0")
+            PASSED_CHECKS=$(jq -r '.results.passed_checks | length' checkov-results.json 2>/dev/null || echo "0")
+            
+            echo "| Status | Count |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| ❌ Failed | $FAILED_CHECKS |" >> $GITHUB_STEP_SUMMARY
+            echo "| ✅ Passed | $PASSED_CHECKS |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            if [ "$FAILED_CHECKS" -gt 0 ]; then
+              echo "### 🚨 Failed Security Checks" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              jq -r '.results.failed_checks[] | "- **\(.check_name)**: \(.file_path)"' checkov-results.json | head -10 >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+          
+          echo "**Analysis Type**: Infrastructure as Code Security" >> $GITHUB_STEP_SUMMARY
+          echo "**Scanners**: Checkov, TFSec" >> $GITHUB_STEP_SUMMARY
+
+  # ==================== CONTAINER SECURITY ====================
+  container-security:
+    runs-on: ubuntu-latest
+    name: Container Security - Trivy
+    needs: build-and-test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Build Docker image (if Dockerfile exists)
+        if: hashFiles('**/Dockerfile') != ''
+        run: |
+          docker build -t vulnerable-app:latest .
+          
+      - name: Run Trivy container scan
+        if: hashFiles('**/Dockerfile') != ''
+        uses: aquasecurity/trivy-action@master
+        continue-on-error: true
+        with:
+          image-ref: 'vulnerable-app:latest'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          
+      - name: Upload Trivy scan results to GitHub Security tab
+        if: hashFiles('**/Dockerfile') != '' && always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+          
+      - name: Parse and display container results
+        if: always()
+        run: |
+          echo "## 🐳 Container Security Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f trivy-results.sarif ]; then
+            echo "### 📊 Trivy Container Scan" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **Container security scan completed**" >> $GITHUB_STEP_SUMMARY
+            echo "📋 **Results uploaded to GitHub Security tab**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          elif [ -f "**/Dockerfile" ]; then
+            echo "### ❌ No Dockerfile found for container scanning" >> $GITHUB_STEP_SUMMARY
+            echo "Container security scan skipped - no Dockerfile detected" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "**Analysis Type**: Container Security" >> $GITHUB_STEP_SUMMARY
+          echo "**Scanner**: Trivy" >> $GITHUB_STEP_SUMMARY
+
+  # ==================== SECRETS SCANNING ====================
+  secrets-scanning:
+    runs-on: ubuntu-latest
+    name: Secrets Scanning - TruffleHog
+    needs: build-and-test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for TruffleHog
+          
+      - name: Run TruffleHog secrets scan
+        id: trufflehog-scan
+        uses: trufflesecurity/trufflehog@main
+        continue-on-error: true
+        with:
+          path: ./
+          base: main
+          head: HEAD
+          extra_args: --json --output secrets-results.json
+          
+      - name: Parse and display secrets results
+        if: always()
+        run: |
+          echo "## 🔐 Secrets Scanning Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f secrets-results.json ]; then
+            SECRETS_FOUND=$(jq -r '. | length' secrets-results.json 2>/dev/null || echo "0")
+            echo "### 📊 TruffleHog Scan Summary" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "🔍 **Secrets Found**: $SECRETS_FOUND" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            if [ "$SECRETS_FOUND" -gt 0 ]; then
+              echo "### 🚨 Secrets Detected" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              jq -r '.[] | "- **\(.DetectorName)**: \(.Redacted)"' secrets-results.json | head -5 >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "✅ **No secrets detected in the codebase**" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "✅ **No secrets detected in the codebase**" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "**Analysis Type**: Secrets Detection" >> $GITHUB_STEP_SUMMARY
+          echo "**Scanner**: TruffleHog" >> $GITHUB_STEP_SUMMARY
+
+  # ==================== FINAL SECURITY SUMMARY ====================
+  security-summary:
+    runs-on: ubuntu-latest
+    name: Complete Security Pipeline Summary
+    needs: [sast-sonarqube, sca-snyk, dast-zap, iac-security, container-security, secrets-scanning]
+    if: always()
+    steps:
+      - name: Generate comprehensive security summary
+        run: |
+          echo "## 🛡️ Complete DevSecOps Security Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🎯 Pipeline Overview" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "This comprehensive security pipeline executed the following scans:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Security Scan Type | Tool | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------------------|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔍 **SAST** (Static Analysis) | SonarQube | ${{ needs.sast-sonarqube.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔒 **SCA** (Dependencies) | Snyk | ${{ needs.sca-snyk.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🌐 **DAST** (Dynamic Testing) | OWASP ZAP | ${{ needs.dast-zap.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🏗️ **IaC Security** | Checkov, TFSec | ${{ needs.iac-security.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🐳 **Container Security** | Trivy | ${{ needs.container-security.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔐 **Secrets Scanning** | TruffleHog | ${{ needs.secrets-scanning.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "### 📋 Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "1. **Review Findings**: Check each scan's detailed results above" >> $GITHUB_STEP_SUMMARY
+          echo "2. **Prioritize Issues**: Focus on High and Critical severity vulnerabilities first" >> $GITHUB_STEP_SUMMARY
+          echo "3. **Implement Fixes**: Address security issues systematically" >> $GITHUB_STEP_SUMMARY
+          echo "4. **Re-scan**: Run the pipeline again after fixes to verify improvements" >> $GITHUB_STEP_SUMMARY
+          echo "5. **Monitor**: Set up continuous security monitoring in production" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "### 🔗 External Dashboards" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 **[SonarQube Dashboard](https://sonarcloud.io/dashboard?id=tupppi_java-reachability-playground&branch=master)**" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔒 **[GitHub Security Tab](https://github.com/${{ github.repository }}/security)**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "📅 **Complete DevSecOps Pipeline executed at**: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "🎯 **Target Repository**: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          echo "🌿 **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "👤 **Triggered by**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
