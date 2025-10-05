@@ -45,12 +45,12 @@ jobs:
         
       - name: Run Snyk Code SAST Scan
         id: snyk-code
-        uses: snyk/actions/code@master
+        uses: snyk/actions/node@master
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          command: test
+          command: code test
           args: --severity-threshold=low
           
       - name: Parse and display Snyk Code results
