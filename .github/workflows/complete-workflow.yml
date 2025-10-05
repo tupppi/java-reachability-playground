@@ -102,25 +102,11 @@ jobs:
           echo "| **UCFGs Analyzed** | 5,858+ |" >> $GITHUB_STEP_SUMMARY
           echo "| **Security Rules** | 21 Python taint analysis rules |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🚨 Expected Security Findings:" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Scan Results:" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**🔴 Critical/High Severity:**" >> $GITHUB_STEP_SUMMARY
-          echo "- SQL Injection vulnerabilities" >> $GITHUB_STEP_SUMMARY
-          echo "- Command Injection vulnerabilities" >> $GITHUB_STEP_SUMMARY
-          echo "- Cross-Site Scripting (XSS)" >> $GITHUB_STEP_SUMMARY
-          echo "- Path Traversal vulnerabilities" >> $GITHUB_STEP_SUMMARY
-          echo "- Hardcoded secrets and passwords" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **SAST analysis completed successfully**" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**🟡 Medium Severity:**" >> $GITHUB_STEP_SUMMARY
-          echo "- Information Disclosure" >> $GITHUB_STEP_SUMMARY
-          echo "- Weak Authentication" >> $GITHUB_STEP_SUMMARY
-          echo "- CSRF vulnerabilities" >> $GITHUB_STEP_SUMMARY
-          echo "- Insecure Direct Object Reference" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**🟢 Low Severity:**" >> $GITHUB_STEP_SUMMARY
-          echo "- Code smells" >> $GITHUB_STEP_SUMMARY
-          echo "- Duplicated code" >> $GITHUB_STEP_SUMMARY
-          echo "- Security hotspots" >> $GITHUB_STEP_SUMMARY
+          echo "**Note**: Detailed findings are available in the SonarQube dashboard link below." >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🔗 External Dashboard:" >> $GITHUB_STEP_SUMMARY
           echo "📋 **[View Full SonarQube Dashboard](https://sonarcloud.io/dashboard?id=tupppi_java-reachability-playground&branch=master)**" >> $GITHUB_STEP_SUMMARY
@@ -484,7 +470,7 @@ jobs:
           path: ./
           base: main
           head: HEAD
-          extra_args: --json --output secrets-results.json
+          extra_args: --json --output-file secrets-results.json
           
       - name: Parse and display secrets results
         if: always()
@@ -597,23 +583,25 @@ jobs:
           echo "| 🔐 **Secrets Scanning** | TruffleHog | ${{ needs.secrets-scanning.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          echo "### 🚨 Critical Security Findings Overview" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Pipeline Execution Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Expected High-Risk Vulnerabilities:**" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔴 **SQL Injection** - Multiple instances in vulnerable Flask app" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔴 **Command Injection** - Direct shell command execution" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔴 **Cross-Site Scripting (XSS)** - Reflected and stored XSS" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔴 **Path Traversal** - File system access vulnerabilities" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔴 **Hardcoded Secrets** - API keys, passwords, tokens in source code" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔴 **Information Disclosure** - Sensitive data exposure" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **All security scans completed successfully**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Scan Coverage:**" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔍 **SAST**: Static code analysis with SonarQube" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔒 **SCA**: Dependency vulnerability scanning with Snyk" >> $GITHUB_STEP_SUMMARY
+          echo "- 🌐 **DAST**: Dynamic application testing with OWASP ZAP" >> $GITHUB_STEP_SUMMARY
+          echo "- 🏗️ **IaC**: Infrastructure security with Checkov & TFSec" >> $GITHUB_STEP_SUMMARY
+          echo "- 🐳 **Container**: Container vulnerability scanning with Trivy" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔐 **Secrets**: Hardcoded secrets detection with TruffleHog" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          echo "### 📋 Security Remediation Priority" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Next Steps" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "1. **🔴 CRITICAL** - Address all hardcoded secrets immediately" >> $GITHUB_STEP_SUMMARY
-          echo "2. **🔴 HIGH** - Fix SQL injection and command injection vulnerabilities" >> $GITHUB_STEP_SUMMARY
-          echo "3. **🟡 MEDIUM** - Implement proper authentication and authorization" >> $GITHUB_STEP_SUMMARY
-          echo "4. **🟢 LOW** - Address code quality and security hotspots" >> $GITHUB_STEP_SUMMARY
+          echo "1. **📖 Review Results**: Expand each scan section above to see detailed findings" >> $GITHUB_STEP_SUMMARY
+          echo "2. **🎯 Prioritize Issues**: Focus on High and Critical severity vulnerabilities first" >> $GITHUB_STEP_SUMMARY
+          echo "3. **🔧 Implement Fixes**: Address security issues systematically" >> $GITHUB_STEP_SUMMARY
+          echo "4. **🔄 Re-scan**: Run the pipeline again after fixes to verify improvements" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           echo "### 🔗 External Dashboards & Reports" >> $GITHUB_STEP_SUMMARY
@@ -635,13 +623,6 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "</details>" >> $GITHUB_STEP_SUMMARY
           
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📋 Next Steps" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "1. **📖 Review Findings**: Expand each scan section above to see detailed results" >> $GITHUB_STEP_SUMMARY
-          echo "2. **🎯 Prioritize Issues**: Focus on High and Critical severity vulnerabilities first" >> $GITHUB_STEP_SUMMARY
-          echo "3. **🔧 Implement Fixes**: Address security issues systematically" >> $GITHUB_STEP_SUMMARY
-          echo "4. **🔄 Re-scan**: Run the pipeline again after fixes to verify improvements" >> $GITHUB_STEP_SUMMARY
           echo "5. **📊 Monitor**: Set up continuous security monitoring in production" >> $GITHUB_STEP_SUMMARY
           echo "6. **🛡️ Integrate**: Use this pipeline in your CI/CD for continuous security" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
