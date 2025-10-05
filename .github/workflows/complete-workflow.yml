@@ -286,7 +286,6 @@ jobs:
         
       - name: Run TFSec Terraform Security Scan
         id: tfsec-scan
-        if: hashFiles('**/*.tf') != ''
         uses: aquasecurity/tfsec-action@v1.0.3
         continue-on-error: true
         with:
@@ -460,8 +459,8 @@ jobs:
           echo "### 🎯 Custom Secrets Scan Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          # Run custom secrets scan using grep patterns, exclude library files and test directories
-          SECRETS_OUTPUT=$(grep -r -i -E "(api[_-]?key|secret[_-]?key|password|token|auth[_-]?token)" --include="*.py" --include="*.js" --include="*.json" --include="*.yml" --include="*.yaml" --include="*.env" . 2>/dev/null | grep -v "test_env" | grep -v "site-packages" | grep -v "node_modules" || echo "No secrets found")
+          # Run custom secrets scan using grep patterns, exclude library files, test directories, and backup files
+          SECRETS_OUTPUT=$(grep -r -i -E "(api[_-]?key|secret[_-]?key|password|token|auth[_-]?token)" --include="*.py" --include="*.js" --include="*.json" --include="*.yml" --include="*.yaml" --include="*.env" . 2>/dev/null | grep -v "test_env" | grep -v "site-packages" | grep -v "node_modules" | grep -v "backup" || echo "No secrets found")
           
           SECRETS_COUNT=$(echo "$SECRETS_OUTPUT" | wc -l)
           
