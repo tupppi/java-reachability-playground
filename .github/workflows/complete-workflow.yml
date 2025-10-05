@@ -8,7 +8,6 @@ on:
 
 env:
   PYTHON_VERSION: '3.9'
-  JAVA_VERSION: '17'
 
 jobs:
   # ==================== BUILD & TEST ====================
@@ -89,27 +88,103 @@ jobs:
           echo "## 🔍 SAST - SonarQube Analysis Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "<details>" >> $GITHUB_STEP_SUMMARY
-          echo "<summary><strong>📊 SAST Scan Summary</strong></summary>" >> $GITHUB_STEP_SUMMARY
+          echo "<summary><strong>📊 SonarQube SAST Scan Summary</strong></summary>" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "✅ **SonarQube SAST Analysis Completed Successfully**" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔗 External Dashboard:" >> $GITHUB_STEP_SUMMARY
+          echo "📋 **[View Full SonarQube Dashboard](https://sonarcloud.io/dashboard?id=tupppi_java-reachability-playground&branch=master)**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Analysis Details:" >> $GITHUB_STEP_SUMMARY
           echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
           echo "| **Analysis Type** | Static Application Security Testing (SAST) |" >> $GITHUB_STEP_SUMMARY
           echo "| **Scanner** | SonarQube Cloud |" >> $GITHUB_STEP_SUMMARY
           echo "| **Target** | Python Flask Application |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Files Analyzed** | 1 Python file |" >> $GITHUB_STEP_SUMMARY
-          echo "| **UCFGs Analyzed** | 5,858+ |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Security Rules** | 21 Python taint analysis rules |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Focus** | Code quality, security hotspots, vulnerabilities |" >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
+
+  # ==================== SAST - Snyk Code Analysis ====================
+  sast-snyk-code:
+    runs-on: ubuntu-latest
+    name: SAST - Snyk Code Analysis
+    needs: build-and-test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          
+      - name: Run Snyk Code SAST Scan
+        id: snyk-code-scan
+        uses: snyk/actions/python@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=low --json-file-output=snyk-code-results.json
+          
+      - name: Parse and display Snyk Code results
+        if: always()
+        run: |
+          echo "## 🔍 SAST - Snyk Code Analysis Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📊 Scan Results:" >> $GITHUB_STEP_SUMMARY
+          echo "<details>" >> $GITHUB_STEP_SUMMARY
+          echo "<summary><strong>📊 Snyk Code SAST Scan Summary</strong></summary>" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ **SAST analysis completed successfully**" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f snyk-code-results.json ]; then
+            TOTAL_VULNS=$(jq -r '.vulnerabilities | length' snyk-code-results.json 2>/dev/null || echo "0")
+            CRITICAL=$(jq -r '[.vulnerabilities[] | select(.severity == "critical")] | length' snyk-code-results.json 2>/dev/null || echo "0")
+            HIGH=$(jq -r '[.vulnerabilities[] | select(.severity == "high")] | length' snyk-code-results.json 2>/dev/null || echo "0")
+            MEDIUM=$(jq -r '[.vulnerabilities[] | select(.severity == "medium")] | length' snyk-code-results.json 2>/dev/null || echo "0")
+            LOW=$(jq -r '[.vulnerabilities[] | select(.severity == "low")] | length' snyk-code-results.json 2>/dev/null || echo "0")
+            
+            echo "### 🎯 Snyk Code Scan Results" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Severity | Count |" >> $GITHUB_STEP_SUMMARY
+            echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| 🔴 Critical | $CRITICAL |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🟠 High | $HIGH |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🟡 Medium | $MEDIUM |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🟢 Low | $LOW |" >> $GITHUB_STEP_SUMMARY
+            echo "| **Total** | **$TOTAL_VULNS** |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            if [ "$CRITICAL" -gt 0 ]; then
+              echo "### 🚨 Critical Code Issues:" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              jq -r '.vulnerabilities[] | select(.severity == "critical") | "- **\(.id)**: \(.title) in \(.packageName)@\(.version)"' snyk-code-results.json >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            if [ "$HIGH" -gt 0 ]; then
+              echo "### ⚠️ High Severity Code Issues:" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              jq -r '.vulnerabilities[] | select(.severity == "high") | "- **\(.id)**: \(.title) in \(.packageName)@\(.version)"' snyk-code-results.json | head -5 >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "### ❌ No Snyk Code results file found" >> $GITHUB_STEP_SUMMARY
+            echo "The Snyk Code scan may have failed or no results were generated." >> $GITHUB_STEP_SUMMARY
+          fi
+          
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Note**: Detailed findings are available in the SonarQube dashboard link below." >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🔗 External Dashboard:" >> $GITHUB_STEP_SUMMARY
-          echo "📋 **[View Full SonarQube Dashboard](https://sonarcloud.io/dashboard?id=tupppi_java-reachability-playground&branch=master)**" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Analysis Details:" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Analysis Type** | Static Application Security Testing (SAST) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Scanner** | Snyk Code |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Target** | Python Flask Application |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Focus** | Code vulnerabilities and security issues |" >> $GITHUB_STEP_SUMMARY
           echo "</details>" >> $GITHUB_STEP_SUMMARY
 
   # ==================== SCA (Software Composition Analysis) ====================
@@ -121,12 +196,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: 'temurin'
-          
       - name: Run Snyk SCA Scan - Python
         id: snyk-python
         uses: snyk/actions/python@master
@@ -135,16 +204,6 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: --json-file-output=snyk-python-results.json
-          
-      - name: Run Snyk SCA Scan - Java (if exists)
-        id: snyk-java
-        if: hashFiles('**/pom.xml') != ''
-        uses: snyk/actions/maven@master
-        continue-on-error: true
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --json-file-output=snyk-java-results.json
           
       - name: Parse and display Snyk results
         if: always()
@@ -160,11 +219,11 @@ jobs:
             echo "### 🐍 Python Dependencies Scan" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             
-            TOTAL_VULNS=$(jq -r '.vulnerabilities | length' snyk-python-results.json)
-            CRITICAL=$(jq -r '[.vulnerabilities[] | select(.severity == "critical")] | length' snyk-python-results.json)
-            HIGH=$(jq -r '[.vulnerabilities[] | select(.severity == "high")] | length' snyk-python-results.json)
-            MEDIUM=$(jq -r '[.vulnerabilities[] | select(.severity == "medium")] | length' snyk-python-results.json)
-            LOW=$(jq -r '[.vulnerabilities[] | select(.severity == "low")] | length' snyk-python-results.json)
+            TOTAL_VULNS=$(jq -r '.vulnerabilities | length' snyk-python-results.json 2>/dev/null || echo "0")
+            CRITICAL=$(jq -r '[.vulnerabilities[] | select(.severity == "critical")] | length' snyk-python-results.json 2>/dev/null || echo "0")
+            HIGH=$(jq -r '[.vulnerabilities[] | select(.severity == "high")] | length' snyk-python-results.json 2>/dev/null || echo "0")
+            MEDIUM=$(jq -r '[.vulnerabilities[] | select(.severity == "medium")] | length' snyk-python-results.json 2>/dev/null || echo "0")
+            LOW=$(jq -r '[.vulnerabilities[] | select(.severity == "low")] | length' snyk-python-results.json 2>/dev/null || echo "0")
             
             echo "| Severity | Count |" >> $GITHUB_STEP_SUMMARY
             echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
@@ -179,7 +238,7 @@ jobs:
             if [ "$CRITICAL" -gt 0 ]; then
               echo "### 🚨 Critical Vulnerabilities:" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
-              jq -r '.vulnerabilities[] | select(.severity == "critical") | "- **\(.id)**: \(.title) in \(.packageName)@\(.version)"' snyk-python-results.json | head -5 >> $GITHUB_STEP_SUMMARY
+              jq -r '.vulnerabilities[] | select(.severity == "critical") | "- **\(.id)**: \(.title) in \(.packageName)@\(.version)"' snyk-python-results.json >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
             fi
             
@@ -190,13 +249,9 @@ jobs:
               jq -r '.vulnerabilities[] | select(.severity == "high") | "- **\(.id)**: \(.title) in \(.packageName)@\(.version)"' snyk-python-results.json | head -5 >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
             fi
-          fi
-          
-          if [ -f snyk-java-results.json ]; then
-            echo "### ☕ Java Dependencies Scan" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "Java Maven dependencies scanned successfully" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ❌ No Snyk Python results file found" >> $GITHUB_STEP_SUMMARY
+            echo "The Snyk Python scan may have failed or no results were generated." >> $GITHUB_STEP_SUMMARY
           fi
           
           echo "### 📋 Analysis Details:" >> $GITHUB_STEP_SUMMARY
@@ -204,7 +259,96 @@ jobs:
           echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
           echo "| **Analysis Type** | Software Composition Analysis (SCA) |" >> $GITHUB_STEP_SUMMARY
           echo "| **Scanner** | Snyk |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Target** | Python & Java Dependencies |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Target** | Python Dependencies |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Focus** | Known vulnerabilities in dependencies |" >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
+
+  # ==================== SCA - OWASP Dependency Check ====================
+  sca-owasp-dependency-check:
+    runs-on: ubuntu-latest
+    name: SCA - OWASP Dependency Check
+    needs: build-and-test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          
+      - name: Download OWASP Dependency Check
+        run: |
+          wget https://github.com/jeremylong/DependencyCheck/releases/latest/download/dependency-check-9.0.4-release.zip
+          unzip dependency-check-9.0.4-release.zip
+          
+      - name: Run OWASP Dependency Check
+        id: owasp-dependency-check
+        run: |
+          ./dependency-check/bin/dependency-check.sh \
+            --project "Java Reachability Playground" \
+            --scan . \
+            --format JSON \
+            --out owasp-dependency-check-report.json \
+            --enableExperimental \
+            --failOnCVSS 0 || true
+        continue-on-error: true
+        
+      - name: Parse and display OWASP Dependency Check results
+        if: always()
+        run: |
+          echo "## 🔒 SCA - OWASP Dependency Check Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "<details>" >> $GITHUB_STEP_SUMMARY
+          echo "<summary><strong>📊 OWASP Dependency Check Summary</strong></summary>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f owasp-dependency-check-report.json ]; then
+            TOTAL_VULNS=$(jq -r '.dependencies | length' owasp-dependency-check-report.json 2>/dev/null || echo "0")
+            HIGH_VULNS=$(jq -r '[.dependencies[].vulnerabilities[]? | select(.severity == "HIGH")] | length' owasp-dependency-check-report.json 2>/dev/null || echo "0")
+            MEDIUM_VULNS=$(jq -r '[.dependencies[].vulnerabilities[]? | select(.severity == "MEDIUM")] | length' owasp-dependency-check-report.json 2>/dev/null || echo "0")
+            LOW_VULNS=$(jq -r '[.dependencies[].vulnerabilities[]? | select(.severity == "LOW")] | length' owasp-dependency-check-report.json 2>/dev/null || echo "0")
+            
+            echo "### 🎯 OWASP Dependency Check Results" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Severity | Count |" >> $GITHUB_STEP_SUMMARY
+            echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| 🔴 High | $HIGH_VULNS |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🟡 Medium | $MEDIUM_VULNS |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🟢 Low | $LOW_VULNS |" >> $GITHUB_STEP_SUMMARY
+            echo "| **Total Dependencies** | **$TOTAL_VULNS** |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            if [ "$HIGH_VULNS" -gt 0 ]; then
+              echo "### 🚨 High Severity Vulnerabilities:" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              jq -r '.dependencies[].vulnerabilities[]? | select(.severity == "HIGH") | "- **\(.name)**: \(.description) (CVE: \(.name))"' owasp-dependency-check-report.json | head -5 >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            if [ "$MEDIUM_VULNS" -gt 0 ]; then
+              echo "### ⚠️ Medium Severity Vulnerabilities:" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              jq -r '.dependencies[].vulnerabilities[]? | select(.severity == "MEDIUM") | "- **\(.name)**: \(.description) (CVE: \(.name))"' owasp-dependency-check-report.json | head -5 >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "### ❌ No OWASP Dependency Check results file found" >> $GITHUB_STEP_SUMMARY
+            echo "The OWASP Dependency Check scan may have failed or no results were generated." >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Analysis Details:" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Analysis Type** | Software Composition Analysis (SCA) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Scanner** | OWASP Dependency Check |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Target** | Python Dependencies |" >> $GITHUB_STEP_SUMMARY
           echo "| **Focus** | Known vulnerabilities in dependencies |" >> $GITHUB_STEP_SUMMARY
           echo "</details>" >> $GITHUB_STEP_SUMMARY
 
@@ -462,15 +606,15 @@ jobs:
         with:
           fetch-depth: 0  # Required for TruffleHog
           
-      - name: Run TruffleHog secrets scan
-        id: trufflehog-scan
-        uses: trufflesecurity/trufflehog@main
-        continue-on-error: true
-        with:
-          path: ./
-          base: main
-          head: HEAD
-          extra_args: --json --output-file secrets-results.json
+             - name: Run TruffleHog secrets scan
+               id: trufflehog-scan
+               uses: trufflesecurity/trufflehog@main
+               continue-on-error: true
+               with:
+                 path: ./
+                 base: main
+                 head: HEAD
+                 extra_args: --json --output secrets-results.json
           
       - name: Parse and display secrets results
         if: always()
