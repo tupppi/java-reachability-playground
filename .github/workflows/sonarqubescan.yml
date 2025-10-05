@@ -21,7 +21,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       with:
-        projectKey: python-vulnerable-app
-        projectName: "Python Vulnerable App"
-        organization: tupppi
-        sources: .
+        args: >
+          -Dsonar.projectKey=python-vulnerable-app
+          -Dsonar.projectName="Python Vulnerable App"
+          -Dsonar.organization=tupppi
+          -Dsonar.sources=.
