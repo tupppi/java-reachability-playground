@@ -15,6 +15,14 @@ from urllib.parse import unquote
 app = Flask(__name__)
 app.secret_key = '123456'  # Vulnerability 1: Extremely weak secret key
 
+# SECRETS FOR TESTING SECRETS SCANNING - DO NOT COMMIT TO PRODUCTION!
+API_KEY = "sk-1234567890abcdef1234567890abcdef12345678"
+DATABASE_PASSWORD = "super_secret_db_password_123"
+AWS_ACCESS_KEY = "AKIAIOSFODNN7EXAMPLE"
+AWS_SECRET_KEY = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+JWT_SECRET = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+GITHUB_TOKEN = "ghp_1234567890abcdef1234567890abcdef12345678"
+
 # Create a simple database for SQL injection testing
 def init_db():
     conn = sqlite3.connect('users.db')

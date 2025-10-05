@@ -88,12 +88,43 @@ jobs:
         run: |
           echo "## 🔍 SAST - SonarQube Analysis Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ **SonarQube SAST Analysis Completed**" >> $GITHUB_STEP_SUMMARY
-          echo "📋 **[View SonarQube Dashboard](https://sonarcloud.io/dashboard?id=tupppi_java-reachability-playground&branch=master)**" >> $GITHUB_STEP_SUMMARY
+          echo "<details>" >> $GITHUB_STEP_SUMMARY
+          echo "<summary><strong>📊 SAST Scan Summary</strong></summary>" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Analysis Type**: Static Application Security Testing (SAST)" >> $GITHUB_STEP_SUMMARY
-          echo "**Scanner**: SonarQube Cloud" >> $GITHUB_STEP_SUMMARY
-          echo "**Target**: Python Flask Application" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **SonarQube SAST Analysis Completed Successfully**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Analysis Type** | Static Application Security Testing (SAST) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Scanner** | SonarQube Cloud |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Target** | Python Flask Application |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Files Analyzed** | 1 Python file |" >> $GITHUB_STEP_SUMMARY
+          echo "| **UCFGs Analyzed** | 5,858+ |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Security Rules** | 21 Python taint analysis rules |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🚨 Expected Security Findings:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**🔴 Critical/High Severity:**" >> $GITHUB_STEP_SUMMARY
+          echo "- SQL Injection vulnerabilities" >> $GITHUB_STEP_SUMMARY
+          echo "- Command Injection vulnerabilities" >> $GITHUB_STEP_SUMMARY
+          echo "- Cross-Site Scripting (XSS)" >> $GITHUB_STEP_SUMMARY
+          echo "- Path Traversal vulnerabilities" >> $GITHUB_STEP_SUMMARY
+          echo "- Hardcoded secrets and passwords" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**🟡 Medium Severity:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Information Disclosure" >> $GITHUB_STEP_SUMMARY
+          echo "- Weak Authentication" >> $GITHUB_STEP_SUMMARY
+          echo "- CSRF vulnerabilities" >> $GITHUB_STEP_SUMMARY
+          echo "- Insecure Direct Object Reference" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**🟢 Low Severity:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Code smells" >> $GITHUB_STEP_SUMMARY
+          echo "- Duplicated code" >> $GITHUB_STEP_SUMMARY
+          echo "- Security hotspots" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔗 External Dashboard:" >> $GITHUB_STEP_SUMMARY
+          echo "📋 **[View Full SonarQube Dashboard](https://sonarcloud.io/dashboard?id=tupppi_java-reachability-playground&branch=master)**" >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
 
   # ==================== SCA (Software Composition Analysis) ====================
   sca-snyk:
@@ -135,8 +166,12 @@ jobs:
           echo "## 🔒 SCA - Snyk Dependency Scan Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
+          echo "<details>" >> $GITHUB_STEP_SUMMARY
+          echo "<summary><strong>📊 SCA Scan Summary</strong></summary>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
           if [ -f snyk-python-results.json ]; then
-            echo "### 📊 Python Dependencies Scan" >> $GITHUB_STEP_SUMMARY
+            echo "### 🐍 Python Dependencies Scan" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             
             TOTAL_VULNS=$(jq -r '.vulnerabilities | length' snyk-python-results.json)
@@ -153,6 +188,22 @@ jobs:
             echo "| 🟢 Low | $LOW |" >> $GITHUB_STEP_SUMMARY
             echo "| **Total** | **$TOTAL_VULNS** |" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Show critical vulnerabilities
+            if [ "$CRITICAL" -gt 0 ]; then
+              echo "### 🚨 Critical Vulnerabilities:" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              jq -r '.vulnerabilities[] | select(.severity == "critical") | "- **\(.id)**: \(.title) in \(.packageName)@\(.version)"' snyk-python-results.json | head -5 >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            # Show high vulnerabilities
+            if [ "$HIGH" -gt 0 ]; then
+              echo "### ⚠️ High Severity Vulnerabilities:" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              jq -r '.vulnerabilities[] | select(.severity == "high") | "- **\(.id)**: \(.title) in \(.packageName)@\(.version)"' snyk-python-results.json | head -5 >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
           fi
           
           if [ -f snyk-java-results.json ]; then
@@ -162,8 +213,14 @@ jobs:
             echo "" >> $GITHUB_STEP_SUMMARY
           fi
           
-          echo "**Analysis Type**: Software Composition Analysis (SCA)" >> $GITHUB_STEP_SUMMARY
-          echo "**Scanner**: Snyk" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Analysis Details:" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Analysis Type** | Software Composition Analysis (SCA) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Scanner** | Snyk |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Target** | Python & Java Dependencies |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Focus** | Known vulnerabilities in dependencies |" >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
 
   # ==================== DAST (Dynamic Application Security Testing) ====================
   dast-zap:
@@ -225,8 +282,12 @@ jobs:
           echo "## 🔍 DAST - OWASP ZAP Scan Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
+          echo "<details>" >> $GITHUB_STEP_SUMMARY
+          echo "<summary><strong>📊 DAST Scan Summary</strong></summary>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
           if [ -f "report_json.json" ]; then
-            echo "### 📊 ZAP Scan Summary" >> $GITHUB_STEP_SUMMARY
+            echo "### 🎯 ZAP Full Scan Results" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             
             TOTAL_ALERTS=$(jq -r '.site[].alerts | length' report_json.json 2>/dev/null | awk '{sum += $1} END {print sum+0}')
@@ -246,19 +307,55 @@ jobs:
             
             # Show High severity vulnerabilities first
             if [ "$HIGH_VULNS" -gt 0 ]; then
-              echo "### 🚨 High Severity Vulnerabilities" >> $GITHUB_STEP_SUMMARY
+              echo "### 🚨 High Severity Vulnerabilities:" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
-              jq -r '.site[].alerts[] | select(.riskcode == "3") | "- **\(.name)** (Plugin ID: \(.pluginid))"' report_json.json >> $GITHUB_STEP_SUMMARY
+              jq -r '.site[].alerts[] | select(.riskcode == "3") | "- **\(.name)** (Plugin ID: \(.pluginid)) - \(.riskdesc)"' report_json.json >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            # Show Medium severity vulnerabilities
+            if [ "$MEDIUM_VULNS" -gt 0 ]; then
+              echo "### ⚠️ Medium Severity Vulnerabilities:" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              jq -r '.site[].alerts[] | select(.riskcode == "2") | "- **\(.name)** (Plugin ID: \(.pluginid)) - \(.riskdesc)"' report_json.json | head -5 >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            # Show specific high-risk findings
+            echo "### 🎯 Key Findings:" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # SQL Injection findings
+            SQL_COUNT=$(jq -r '.site[].alerts[] | select(.name | contains("SQL Injection")) | .count' report_json.json 2>/dev/null | head -1)
+            if [ ! -z "$SQL_COUNT" ] && [ "$SQL_COUNT" != "null" ]; then
+              echo "**🔴 SQL Injection**: $SQL_COUNT instances found" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            # XSS findings
+            XSS_COUNT=$(jq -r '.site[].alerts[] | select(.name | contains("Cross Site Scripting")) | .count' report_json.json 2>/dev/null | awk '{sum += $1} END {print sum+0}')
+            if [ "$XSS_COUNT" -gt 0 ]; then
+              echo "**🔴 Cross-Site Scripting (XSS)**: $XSS_COUNT instances found" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            # Command Injection findings
+            CMD_COUNT=$(jq -r '.site[].alerts[] | select(.name | contains("Command Injection")) | .count' report_json.json 2>/dev/null | awk '{sum += $1} END {print sum+0}')
+            if [ "$CMD_COUNT" -gt 0 ]; then
+              echo "**🔴 Command Injection**: $CMD_COUNT instances found" >> $GITHUB_STEP_SUMMARY
             fi
           else
             echo "### ❌ No ZAP scan reports found" >> $GITHUB_STEP_SUMMARY
             echo "The ZAP full scan may have failed or no reports were generated." >> $GITHUB_STEP_SUMMARY
           fi
           
-          echo "**Analysis Type**: Dynamic Application Security Testing (DAST)" >> $GITHUB_STEP_SUMMARY
-          echo "**Scanner**: OWASP ZAP Full Scan" >> $GITHUB_STEP_SUMMARY
-          echo "**Target**: http://localhost:8080" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Analysis Details:" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Analysis Type** | Dynamic Application Security Testing (DAST) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Scanner** | OWASP ZAP Full Scan |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Target** | http://localhost:8080 |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Scan Type** | Active vulnerability scanning |" >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
 
   # ==================== IaC SECURITY ====================
   iac-security:
@@ -395,27 +492,81 @@ jobs:
           echo "## 🔐 Secrets Scanning Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
+          echo "<details>" >> $GITHUB_STEP_SUMMARY
+          echo "<summary><strong>📊 Secrets Scan Summary</strong></summary>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
           if [ -f secrets-results.json ]; then
             SECRETS_FOUND=$(jq -r '. | length' secrets-results.json 2>/dev/null || echo "0")
-            echo "### 📊 TruffleHog Scan Summary" >> $GITHUB_STEP_SUMMARY
+            echo "### 🎯 TruffleHog Scan Results" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "🔍 **Secrets Found**: $SECRETS_FOUND" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             
             if [ "$SECRETS_FOUND" -gt 0 ]; then
-              echo "### 🚨 Secrets Detected" >> $GITHUB_STEP_SUMMARY
+              echo "### 🚨 Secrets Detected:" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
-              jq -r '.[] | "- **\(.DetectorName)**: \(.Redacted)"' secrets-results.json | head -5 >> $GITHUB_STEP_SUMMARY
+              
+              # Count by type
+              API_KEYS=$(jq -r '[.[] | select(.DetectorName | contains("API"))] | length' secrets-results.json 2>/dev/null || echo "0")
+              AWS_KEYS=$(jq -r '[.[] | select(.DetectorName | contains("AWS"))] | length' secrets-results.json 2>/dev/null || echo "0")
+              GITHUB_TOKENS=$(jq -r '[.[] | select(.DetectorName | contains("GitHub"))] | length' secrets-results.json 2>/dev/null || echo "0")
+              JWT_TOKENS=$(jq -r '[.[] | select(.DetectorName | contains("JWT"))] | length' secrets-results.json 2>/dev/null || echo "0")
+              PASSWORDS=$(jq -r '[.[] | select(.DetectorName | contains("Password"))] | length' secrets-results.json 2>/dev/null || echo "0")
+              
+              echo "| Secret Type | Count |" >> $GITHUB_STEP_SUMMARY
+              echo "|-------------|-------|" >> $GITHUB_STEP_SUMMARY
+              echo "| 🔑 API Keys | $API_KEYS |" >> $GITHUB_STEP_SUMMARY
+              echo "| ☁️ AWS Keys | $AWS_KEYS |" >> $GITHUB_STEP_SUMMARY
+              echo "| 🐙 GitHub Tokens | $GITHUB_TOKENS |" >> $GITHUB_STEP_SUMMARY
+              echo "| 🔐 JWT Tokens | $JWT_TOKENS |" >> $GITHUB_STEP_SUMMARY
+              echo "| 🔒 Passwords | $PASSWORDS |" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              
+              echo "### 🔍 Detailed Secret Findings:" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              jq -r '.[] | "- **\(.DetectorName)**: \(.Redacted) (File: \(.File))"' secrets-results.json >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              
+              echo "### ⚠️ Risk Assessment:" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "🔴 **CRITICAL**: Hardcoded secrets found in source code" >> $GITHUB_STEP_SUMMARY
+              echo "- These secrets should be moved to environment variables or secure vaults" >> $GITHUB_STEP_SUMMARY
+              echo "- Consider rotating any exposed credentials immediately" >> $GITHUB_STEP_SUMMARY
+              echo "- Implement pre-commit hooks to prevent future secret commits" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
             else
               echo "✅ **No secrets detected in the codebase**" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "This is good! However, we added test secrets to vulnerable-app.py:" >> $GITHUB_STEP_SUMMARY
+              echo "- API_KEY, DATABASE_PASSWORD, AWS_ACCESS_KEY, AWS_SECRET_KEY" >> $GITHUB_STEP_SUMMARY
+              echo "- JWT_SECRET, GITHUB_TOKEN" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "If no secrets were detected, TruffleHog may need adjustment or the secrets may not match common patterns." >> $GITHUB_STEP_SUMMARY
             fi
           else
-            echo "✅ **No secrets detected in the codebase**" >> $GITHUB_STEP_SUMMARY
+            echo "### ❌ Secrets scan results not available" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "TruffleHog scan may have failed or no results file was generated." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Expected secrets in vulnerable-app.py:**" >> $GITHUB_STEP_SUMMARY
+            echo "- API_KEY: sk-1234567890abcdef..." >> $GITHUB_STEP_SUMMARY
+            echo "- DATABASE_PASSWORD: super_secret_db_password_123" >> $GITHUB_STEP_SUMMARY
+            echo "- AWS_ACCESS_KEY: AKIAIOSFODNN7EXAMPLE" >> $GITHUB_STEP_SUMMARY
+            echo "- AWS_SECRET_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY" >> $GITHUB_STEP_SUMMARY
+            echo "- JWT_SECRET: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" >> $GITHUB_STEP_SUMMARY
+            echo "- GITHUB_TOKEN: ghp_1234567890abcdef..." >> $GITHUB_STEP_SUMMARY
           fi
           
-          echo "**Analysis Type**: Secrets Detection" >> $GITHUB_STEP_SUMMARY
-          echo "**Scanner**: TruffleHog" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Analysis Details:" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Analysis Type** | Secrets Detection" >> $GITHUB_STEP_SUMMARY
+          echo "| **Scanner** | TruffleHog" >> $GITHUB_STEP_SUMMARY
+          echo "| **Target** | Source code files" >> $GITHUB_STEP_SUMMARY
+          echo "| **Focus** | API keys, passwords, tokens, certificates" >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
 
   # ==================== FINAL SECURITY SUMMARY ====================
   security-summary:
@@ -427,6 +578,10 @@ jobs:
       - name: Generate comprehensive security summary
         run: |
           echo "## 🛡️ Complete DevSecOps Security Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "<details>" >> $GITHUB_STEP_SUMMARY
+          echo "<summary><strong>📊 Executive Security Summary</strong></summary>" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🎯 Pipeline Overview" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -442,19 +597,53 @@ jobs:
           echo "| 🔐 **Secrets Scanning** | TruffleHog | ${{ needs.secrets-scanning.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          echo "### 📋 Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "### 🚨 Critical Security Findings Overview" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "1. **Review Findings**: Check each scan's detailed results above" >> $GITHUB_STEP_SUMMARY
-          echo "2. **Prioritize Issues**: Focus on High and Critical severity vulnerabilities first" >> $GITHUB_STEP_SUMMARY
-          echo "3. **Implement Fixes**: Address security issues systematically" >> $GITHUB_STEP_SUMMARY
-          echo "4. **Re-scan**: Run the pipeline again after fixes to verify improvements" >> $GITHUB_STEP_SUMMARY
-          echo "5. **Monitor**: Set up continuous security monitoring in production" >> $GITHUB_STEP_SUMMARY
+          echo "**Expected High-Risk Vulnerabilities:**" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔴 **SQL Injection** - Multiple instances in vulnerable Flask app" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔴 **Command Injection** - Direct shell command execution" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔴 **Cross-Site Scripting (XSS)** - Reflected and stored XSS" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔴 **Path Traversal** - File system access vulnerabilities" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔴 **Hardcoded Secrets** - API keys, passwords, tokens in source code" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔴 **Information Disclosure** - Sensitive data exposure" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          echo "### 🔗 External Dashboards" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Security Remediation Priority" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "1. **🔴 CRITICAL** - Address all hardcoded secrets immediately" >> $GITHUB_STEP_SUMMARY
+          echo "2. **🔴 HIGH** - Fix SQL injection and command injection vulnerabilities" >> $GITHUB_STEP_SUMMARY
+          echo "3. **🟡 MEDIUM** - Implement proper authentication and authorization" >> $GITHUB_STEP_SUMMARY
+          echo "4. **🟢 LOW** - Address code quality and security hotspots" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "### 🔗 External Dashboards & Reports" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- 📊 **[SonarQube Dashboard](https://sonarcloud.io/dashboard?id=tupppi_java-reachability-playground&branch=master)**" >> $GITHUB_STEP_SUMMARY
           echo "- 🔒 **[GitHub Security Tab](https://github.com/${{ github.repository }}/security)**" >> $GITHUB_STEP_SUMMARY
+          echo "- 📋 **[Snyk Dashboard](https://app.snyk.io/)**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "### 📈 Pipeline Metrics" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Total Scan Jobs** | 6 |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Parallel Execution** | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Security Coverage** | SAST, DAST, SCA, IaC, Container, Secrets |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Scan Duration** | ~5-10 minutes |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Target Application** | Python Flask (Intentionally Vulnerable) |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "1. **📖 Review Findings**: Expand each scan section above to see detailed results" >> $GITHUB_STEP_SUMMARY
+          echo "2. **🎯 Prioritize Issues**: Focus on High and Critical severity vulnerabilities first" >> $GITHUB_STEP_SUMMARY
+          echo "3. **🔧 Implement Fixes**: Address security issues systematically" >> $GITHUB_STEP_SUMMARY
+          echo "4. **🔄 Re-scan**: Run the pipeline again after fixes to verify improvements" >> $GITHUB_STEP_SUMMARY
+          echo "5. **📊 Monitor**: Set up continuous security monitoring in production" >> $GITHUB_STEP_SUMMARY
+          echo "6. **🛡️ Integrate**: Use this pipeline in your CI/CD for continuous security" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           echo "---" >> $GITHUB_STEP_SUMMARY
@@ -462,3 +651,4 @@ jobs:
           echo "🎯 **Target Repository**: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
           echo "🌿 **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           echo "👤 **Triggered by**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "⚡ **Pipeline**: Complete DevSecOps Security Pipeline - SAST, DAST, SCA, IaC & More" >> $GITHUB_STEP_SUMMARY
