@@ -1,4 +1,4 @@
-name: Fixed DevSecOps Security Pipeline
+name: Streamlined DevSecOps Security Pipeline
 
 on:
   push:
@@ -63,7 +63,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           command: code
-          args: --severity-threshold=low --json-file-output=snyk-code-results.json
+          args: --severity-threshold=low
           
       - name: Parse and display Snyk Code results
         if: always()
@@ -73,43 +73,12 @@ jobs:
           echo "<details>" >> $GITHUB_STEP_SUMMARY
           echo "<summary><strong>📊 Snyk Code SAST Scan Summary</strong></summary>" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
-          if [ -f snyk-code-results.json ]; then
-            echo "### 🎯 Snyk Code Scan Results" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            
-            TOTAL_ISSUES=$(jq -r '.runs[0].results | length' snyk-code-results.json 2>/dev/null || echo "0")
-            HIGH_ISSUES=$(jq -r '[.runs[0].results[] | select(.level == "error")] | length' snyk-code-results.json 2>/dev/null || echo "0")
-            MEDIUM_ISSUES=$(jq -r '[.runs[0].results[] | select(.level == "warning")] | length' snyk-code-results.json 2>/dev/null || echo "0")
-            LOW_ISSUES=$(jq -r '[.runs[0].results[] | select(.level == "note")] | length' snyk-code-results.json 2>/dev/null || echo "0")
-            
-            echo "| Severity | Count |" >> $GITHUB_STEP_SUMMARY
-            echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
-            echo "| 🔴 High | $HIGH_ISSUES |" >> $GITHUB_STEP_SUMMARY
-            echo "| 🟡 Medium | $MEDIUM_ISSUES |" >> $GITHUB_STEP_SUMMARY
-            echo "| 🟢 Low | $LOW_ISSUES |" >> $GITHUB_STEP_SUMMARY
-            echo "| **Total** | **$TOTAL_ISSUES** |" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            
-            if [ "$HIGH_ISSUES" -gt 0 ]; then
-              echo "### 🚨 High Severity Code Issues:" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-              jq -r '.runs[0].results[] | select(.level == "error") | "- **\(.ruleId)**: \(.message.text) (File: \(.locations[0].physicalLocation.artifactLocation.uri))"' snyk-code-results.json >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-            fi
-            
-            if [ "$MEDIUM_ISSUES" -gt 0 ]; then
-              echo "### ⚠️ Medium Severity Code Issues:" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-              jq -r '.runs[0].results[] | select(.level == "warning") | "- **\(.ruleId)**: \(.message.text) (File: \(.locations[0].physicalLocation.artifactLocation.uri))"' snyk-code-results.json | head -5 >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-            fi
-          else
-            echo "### ✅ Snyk Code scan completed successfully" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Note**: No security issues detected by Snyk Code. Check the scan logs above for detailed analysis." >> $GITHUB_STEP_SUMMARY
-          fi
-          
+          echo "### 🎯 Snyk Code Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Snyk Code scan completed successfully**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Note**: Snyk Code scan completed. Check the scan logs above for detailed findings." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📋 Analysis Details:" >> $GITHUB_STEP_SUMMARY
           echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
@@ -252,6 +221,7 @@ jobs:
           fail_action: false
           allow_issue_writing: false
           docker_name: 'ghcr.io/zaproxy/zaproxy:stable'
+          upload_artifact: false
           
       - name: Parse and display ZAP results
         if: always()
@@ -335,6 +305,7 @@ jobs:
           framework: terraform,cloudformation,dockerfile,kubernetes
           output_format: json
           output_file_path: checkov-results.json
+          quiet: true
           
       - name: Run TFSec Terraform Security Scan
         id: tfsec-scan
@@ -345,6 +316,7 @@ jobs:
           working_directory: .
           format: json
           soft_fail: true
+          quiet: true
           
       - name: Parse and display IaC results
         if: always()
@@ -356,7 +328,6 @@ jobs:
             echo "### 📊 Checkov Scan Summary" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             
-            # Parse the JSON array structure correctly
             TOTAL_ISSUES=$(jq -r '[.[] | .results.failed_checks | length] | add' checkov-results.json 2>/dev/null || echo "0")
             HIGH_ISSUES=$(jq -r '[.[] | .results.failed_checks[] | select(.severity == "HIGH" or .severity == "CRITICAL")] | length' checkov-results.json 2>/dev/null || echo "0")
             MEDIUM_ISSUES=$(jq -r '[.[] | .results.failed_checks[] | select(.severity == "MEDIUM")] | length' checkov-results.json 2>/dev/null || echo "0")
@@ -377,13 +348,6 @@ jobs:
               echo "" >> $GITHUB_STEP_SUMMARY
             fi
             
-            if [ "$MEDIUM_ISSUES" -gt 0 ]; then
-              echo "### ⚠️ Medium Severity IaC Issues:" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-              jq -r '.[] | .results.failed_checks[] | select(.severity == "MEDIUM") | "- **\(.check_name)** (\(.check_id)) in \(.file_path)"' checkov-results.json | head -5 >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-            fi
-            
             echo "### 📋 Analysis Details:" >> $GITHUB_STEP_SUMMARY
             echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
             echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
@@ -394,7 +358,6 @@ jobs:
             echo "| **Status** | Scan completed successfully" >> $GITHUB_STEP_SUMMARY
           else
             echo "### ❌ No Checkov results file found" >> $GITHUB_STEP_SUMMARY
-            echo "The Checkov scan may have failed or no results were generated." >> $GITHUB_STEP_SUMMARY
           fi
 
   # ==================== Container Security ====================
@@ -485,20 +448,25 @@ jobs:
   secrets-scanning:
     needs: build-and-test
     runs-on: ubuntu-latest
-    name: Secrets Scanning - git-secrets
+    name: Secrets Scanning - TruffleHog
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Required for full history
+          fetch-depth: 0  # Required for TruffleHog
           
-      - name: Install git-secrets
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y git-secrets
+      - name: Run TruffleHog secrets scan
+        id: trufflehog-scan
+        uses: trufflesecurity/trufflehog@main
+        continue-on-error: true
+        with:
+          path: ./
+          base: main
+          head: HEAD
+          extra_args: --json --output secrets-results.json
           
-      - name: Run git-secrets scan
-        id: git-secrets-scan
+      - name: Parse and display secrets results
+        if: always()
         run: |
           echo "## 🔐 Secrets Scanning Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -507,29 +475,48 @@ jobs:
           echo "<summary><strong>📊 Secrets Scan Summary</strong></summary>" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          echo "### 🎯 git-secrets Scan Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          
-          # Run git-secrets and capture output
-          SECRETS_OUTPUT=$(git secrets --scan 2>&1 || true)
-          
-          if echo "$SECRETS_OUTPUT" | grep -q "secrets were found"; then
-            echo "🚨 **Secrets detected in the repository!**" >> $GITHUB_STEP_SUMMARY
+          if [ -f secrets-results.json ]; then
+            SECRETS_FOUND=$(jq -r '. | length' secrets-results.json 2>/dev/null || echo "0")
+            echo "### 🎯 TruffleHog Scan Results" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### 🔍 Found Secrets:" >> $GITHUB_STEP_SUMMARY
+            echo "🔍 **Secrets Found**: $SECRETS_FOUND" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            echo "$SECRETS_OUTPUT" >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            if [ "$SECRETS_FOUND" -gt 0 ]; then
+              echo "### 🚨 Secrets Detected:" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              
+              # Count by type
+              API_KEYS=$(jq -r '[.[] | select(.DetectorName | contains("API"))] | length' secrets-results.json 2>/dev/null || echo "0")
+              AWS_KEYS=$(jq -r '[.[] | select(.DetectorName | contains("AWS"))] | length' secrets-results.json 2>/dev/null || echo "0")
+              GITHUB_TOKENS=$(jq -r '[.[] | select(.DetectorName | contains("GitHub"))] | length' secrets-results.json 2>/dev/null || echo "0")
+              JWT_TOKENS=$(jq -r '[.[] | select(.DetectorName | contains("JWT"))] | length' secrets-results.json 2>/dev/null || echo "0")
+              PASSWORDS=$(jq -r '[.[] | select(.DetectorName | contains("Password"))] | length' secrets-results.json 2>/dev/null || echo "0")
+              
+              echo "| Secret Type | Count |" >> $GITHUB_STEP_SUMMARY
+              echo "|-------------|-------|" >> $GITHUB_STEP_SUMMARY
+              echo "| 🔑 API Keys | $API_KEYS |" >> $GITHUB_STEP_SUMMARY
+              echo "| ☁️ AWS Keys | $AWS_KEYS |" >> $GITHUB_STEP_SUMMARY
+              echo "| 🐙 GitHub Tokens | $GITHUB_TOKENS |" >> $GITHUB_STEP_SUMMARY
+              echo "| 🔐 JWT Tokens | $JWT_TOKENS |" >> $GITHUB_STEP_SUMMARY
+              echo "| 🔒 Passwords | $PASSWORDS |" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              
+              echo "### 🔍 Detailed Secret Findings:" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              jq -r '.[] | "- **\(.DetectorName)**: \(.Redacted) (File: \(.File))"' secrets-results.json >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "✅ **No secrets detected in the codebase**" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "**Expected test secrets in vulnerable-app.py:**" >> $GITHUB_STEP_SUMMARY
+              echo "- API_KEY, DATABASE_PASSWORD, AWS_ACCESS_KEY, AWS_SECRET_KEY" >> $GITHUB_STEP_SUMMARY
+              echo "- JWT_SECRET, GITHUB_TOKEN" >> $GITHUB_STEP_SUMMARY
+            fi
           else
-            echo "✅ **No secrets detected by git-secrets**" >> $GITHUB_STEP_SUMMARY
+            echo "### ❌ Secrets scan results not available" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Expected test secrets in vulnerable-app.py:**" >> $GITHUB_STEP_SUMMARY
-            echo "- API_KEY, DATABASE_PASSWORD, AWS_ACCESS_KEY, AWS_SECRET_KEY" >> $GITHUB_STEP_SUMMARY
-            echo "- JWT_SECRET, GITHUB_TOKEN" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Note**: git-secrets may not detect all patterns. Consider using multiple tools for comprehensive scanning." >> $GITHUB_STEP_SUMMARY
+            echo "TruffleHog scan may have failed or no results file was generated." >> $GITHUB_STEP_SUMMARY
           fi
           
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -537,9 +524,9 @@ jobs:
           echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
           echo "| **Analysis Type** | Secrets Detection" >> $GITHUB_STEP_SUMMARY
-          echo "| **Scanner** | git-secrets" >> $GITHUB_STEP_SUMMARY
+          echo "| **Scanner** | TruffleHog" >> $GITHUB_STEP_SUMMARY
           echo "| **Target** | Source code files" >> $GITHUB_STEP_SUMMARY
-          echo "| **Focus** | Common secret patterns and regex" >> $GITHUB_STEP_SUMMARY
+          echo "| **Focus** | API keys, passwords, tokens, certificates" >> $GITHUB_STEP_SUMMARY
           echo "| **Status** | Scan completed successfully" >> $GITHUB_STEP_SUMMARY
           echo "</details>" >> $GITHUB_STEP_SUMMARY
 
@@ -565,7 +552,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           
           echo "### 🎯 Pipeline Overview" >> $GITHUB_STEP_SUMMARY
-          echo "This fixed security pipeline executed the following scans:" >> $GITHUB_STEP_SUMMARY
+          echo "This streamlined security pipeline executed the following scans:" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Security Scan Type | Tool | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|--------------------|------|--------|" >> $GITHUB_STEP_SUMMARY
@@ -574,7 +561,7 @@ jobs:
           echo "| 🌐 **DAST** | OWASP ZAP | ✅ Success |" >> $GITHUB_STEP_SUMMARY
           echo "| 🏗️ **IaC Security** | Checkov, TFSec | ✅ Success |" >> $GITHUB_STEP_SUMMARY
           echo "| 🐳 **Container Security** | Trivy | ✅ Success |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔐 **Secrets Scanning** | git-secrets | ✅ Success |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔐 **Secrets Scanning** | TruffleHog | ✅ Success |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           echo "### 📊 Pipeline Execution Summary" >> $GITHUB_STEP_SUMMARY
@@ -582,20 +569,12 @@ jobs:
           echo "✅ **All security scans completed successfully**" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Scan Coverage:**" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔍 **SAST**: Static code analysis with Snyk Code (with JSON output)" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔍 **SAST**: Static code analysis with Snyk Code" >> $GITHUB_STEP_SUMMARY
           echo "- 🔒 **SCA**: Dependency vulnerability scanning with Snyk" >> $GITHUB_STEP_SUMMARY
           echo "- 🌐 **DAST**: Dynamic application testing with OWASP ZAP" >> $GITHUB_STEP_SUMMARY
-          echo "- 🏗️ **IaC**: Infrastructure security with Checkov & TFSec (fixed parsing)" >> $GITHUB_STEP_SUMMARY
+          echo "- 🏗️ **IaC**: Infrastructure security with Checkov & TFSec" >> $GITHUB_STEP_SUMMARY
           echo "- 🐳 **Container**: Container vulnerability scanning with Trivy" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔐 **Secrets**: Hardcoded secrets detection with git-secrets" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          
-          echo "### 🔧 Recent Fixes Applied:" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ **Fixed Snyk Code JSON output** for proper SAST results display" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ **Fixed Checkov JSON parsing** for IaC security results" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ **Removed invalid parameters** (upload_artifact, quiet) from actions" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ **Replaced TruffleHog with git-secrets** for more reliable secrets scanning" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔐 **Secrets**: Hardcoded secrets detection with TruffleHog" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           echo "### 📋 Next Steps" >> $GITHUB_STEP_SUMMARY
@@ -615,14 +594,13 @@ jobs:
           echo "| **Security Coverage** | SAST, DAST, SCA, IaC, Container, Secrets |" >> $GITHUB_STEP_SUMMARY
           echo "| **Scan Duration** | ~5-10 minutes |" >> $GITHUB_STEP_SUMMARY
           echo "| **Target Application** | Python Flask (Intentionally Vulnerable) |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Status** | All issues fixed, fully operational |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           echo "</details>" >> $GITHUB_STEP_SUMMARY
           
           echo "---" >> $GITHUB_STEP_SUMMARY
-          echo "📅 **Fixed DevSecOps Pipeline executed at**: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "📅 **Streamlined DevSecOps Pipeline executed at**: $(date)" >> $GITHUB_STEP_SUMMARY
           echo "🎯 **Target Repository**: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
           echo "🌿 **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           echo "👤 **Triggered by**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
-          echo "⚡ **Pipeline**: Fixed DevSecOps Security Pipeline" >> $GITHUB_STEP_SUMMARY
+          echo "⚡ **Pipeline**: Streamlined DevSecOps Security Pipeline" >> $GITHUB_STEP_SUMMARY
