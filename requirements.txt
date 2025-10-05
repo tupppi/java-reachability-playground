@@ -1,1 +1,11 @@
 Flask==2.3.3
+# Intentionally vulnerable dependencies for SCA testing
+urllib3==1.24.1  # Known vulnerabilities
+requests==2.20.0  # Known vulnerabilities  
+pyyaml==5.1  # Known vulnerabilities
+jinja2==2.10.1  # Known vulnerabilities
+markupsafe==1.1.0  # Known vulnerabilities
+cryptography==3.2.1  # Known vulnerabilities
+pillow==6.0.0  # Known vulnerabilities
+django==2.2.0  # Known vulnerabilities
+lxml==4.2.5  # Known vulnerabilities

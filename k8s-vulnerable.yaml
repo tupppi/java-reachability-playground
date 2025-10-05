@@ -1,0 +1,181 @@
+# Intentionally vulnerable Kubernetes manifests for IaC security testing
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vulnerable-namespace
+---
+# Vulnerable Pod - running as root
+apiVersion: v1
+kind: Pod
+metadata:
+  name: vulnerable-pod
+  namespace: vulnerable-namespace
+spec:
+  containers:
+  - name: vulnerable-container
+    image: vulnerable-app:latest
+    # Running as root (vulnerability)
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      privileged: true
+    # No resource limits (vulnerability)
+    # No security context restrictions (vulnerability)
+    env:
+    - name: DB_PASSWORD
+      value: "super_secret_password_123"
+    - name: API_KEY
+      value: "sk-TEST_TOKEN_NOT_REAL"
+    ports:
+    - containerPort: 8080
+---
+# Vulnerable Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vulnerable-deployment
+  namespace: vulnerable-namespace
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: vulnerable-app
+  template:
+    metadata:
+      labels:
+        app: vulnerable-app
+    spec:
+      containers:
+      - name: vulnerable-app
+        image: vulnerable-app:latest
+        # No security context (vulnerability)
+        ports:
+        - containerPort: 8080
+        # No resource limits (vulnerability)
+        env:
+        - name: SECRET_KEY
+          value: "hardcoded-secret-key"
+        - name: JWT_SECRET
+          value: "jwt-secret-key"
+---
+# Vulnerable Service - exposes to all
+apiVersion: v1
+kind: Service
+metadata:
+  name: vulnerable-service
+  namespace: vulnerable-namespace
+spec:
+  type: LoadBalancer  # Exposes to internet (vulnerability)
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    app: vulnerable-app
+---
+# Vulnerable ConfigMap with secrets
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vulnerable-config
+  namespace: vulnerable-namespace
+data:
+  # Secrets in ConfigMap (vulnerability)
+  database-password: "super_secret_password_123"
+  api-key: "sk-TEST_TOKEN_NOT_REAL"
+  jwt-secret: "jwt-secret-key"
+  aws-access-key: "TEST_NOT_REAL_KEY"
+  aws-secret-key: "TEST_NOT_REAL_SECRET"
+---
+# Vulnerable Secret - using base64 encoding (not encrypted)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vulnerable-secret
+  namespace: vulnerable-namespace
+type: Opaque
+data:
+  # Base64 encoded secrets (vulnerability)
+  password: c3VwZXJfc2VjcmV0X3Bhc3N3b3JkXzEyMw==  # super_secret_password_123
+  api-key: c2stVEVTVF9UT0tFTl9OT1RfUkVBTG==  # sk-TEST_TOKEN_NOT_REAL
+---
+# Vulnerable NetworkPolicy - allows all traffic
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: vulnerable-network-policy
+  namespace: vulnerable-namespace
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - {}  # Allow all ingress (vulnerability)
+  egress:
+  - {}  # Allow all egress (vulnerability)
+---
+# Vulnerable Role - overly permissive
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: vulnerable-namespace
+  name: vulnerable-role
+rules:
+- apiGroups: [""]
+  resources: ["*"]
+  verbs: ["*"]  # All permissions (vulnerability)
+- apiGroups: ["apps"]
+  resources: ["*"]
+  verbs: ["*"]  # All permissions (vulnerability)
+- apiGroups: ["extensions"]
+  resources: ["*"]
+  verbs: ["*"]  # All permissions (vulnerability)
+---
+# Vulnerable RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: vulnerable-rolebinding
+  namespace: vulnerable-namespace
+subjects:
+- kind: User
+  name: vulnerable-user
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: vulnerable-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# Vulnerable PodSecurityPolicy
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: vulnerable-psp
+spec:
+  # Allow privileged containers (vulnerability)
+  privileged: true
+  # Allow host network (vulnerability)
+  hostNetwork: true
+  # Allow host PID (vulnerability)
+  hostPID: true
+  # Allow host IPC (vulnerability)
+  hostIPC: true
+  # Allow all host paths (vulnerability)
+  allowedHostPaths:
+  - pathPrefix: "/"
+  # Allow all volumes (vulnerability)
+  volumes:
+  - '*'
+  # Allow all users (vulnerability)
+  runAsUser:
+    rule: RunAsAny
+  # Allow all groups (vulnerability)
+  runAsGroup:
+    rule: RunAsAny
+  # Allow all supplemental groups (vulnerability)
+  supplementalGroups:
+    rule: RunAsAny
+  # Allow all FS groups (vulnerability)
+  fsGroup:
+    rule: RunAsAny
